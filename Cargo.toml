@@ -1,0 +1,9 @@
+[package]
+name = "twirl"
+version = "0.1.0"
+authors = ["Robbie Huffman <robbie.huffman@gmail.com>"]
+
+[dependencies]
+sdl2 = "0.30"
+
+
