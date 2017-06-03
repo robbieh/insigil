@@ -5,6 +5,9 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::video::{Window, WindowContext};
 use sdl2::render::{Canvas, Texture, TextureCreator};
+
+use sdl2::gfx::primitives::DrawRenderer;
+
 use std::time::Duration;
 use std::thread;
 
@@ -12,9 +15,11 @@ fn ring(canvas: &mut Canvas<Window>) {
     let (width, height) = canvas.window().size();
     //print!("width: {:?}, height: {:?}", width, height);
 
-
-
-
+    let color = Color::RGB(0,255,0);
+    let _ = canvas.circle(0,0,10,color);
+    let _ = canvas.circle(0,0,100,color);
+    let _ = canvas.circle(0,0,1000,color);
+    canvas.present();
 
 }
 
