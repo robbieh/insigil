@@ -13,6 +13,8 @@ use std::time::Duration;
 use std::thread;
 use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::io::{stdin};
+
 
 // parse args
 //  data type
@@ -28,6 +30,8 @@ use std::collections::VecDeque;
 //     interval - space between ticks   | |   |  |    |  | |
 // dates
 // text
+//
+//
 enum RingVizType {
     Hist, Interval, Text
 }
@@ -48,7 +52,7 @@ macro_rules! rect(
 );
 
 fn hist_ring(canvas: &mut Canvas<Window>, r: Rect, buf: &mut RingDataBuffer) {
-    ^^^pass canvas? or some sort of trait, like canvas.circle?
+    //^^^pass canvas? or some sort of trait, like canvas.circle?
 
 }
 
@@ -69,7 +73,17 @@ fn ring(canvas: &mut Canvas<Window>, viztype: &mut RingVizType) {
 
 }
 
+fn io_reader(textq: VecDeque<char>) {
+    for line in std::io::stdin().lines() {
+            println!(line.ok().unwrap());
+            //line.ok().unwrap().each()
+    }
+}
+
 pub fn main() {
+    let textq: VecDeque <char> = VecDeque:::new();
+    thread::spawn(|| { io_reader(); });
+
     let mut viztype = RingVizType::Hist;
 
     let sdl_context = sdl2::init().unwrap();
