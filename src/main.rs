@@ -13,7 +13,8 @@ use std::time::Duration;
 use std::thread;
 use std::collections::HashMap;
 use std::collections::VecDeque;
-use std::io::{stdin};
+use std::io::{stdin, BufRead};
+use std::sync::{Arc, Mutex};
 
 
 // parse args
@@ -56,7 +57,13 @@ fn hist_ring(canvas: &mut Canvas<Window>, r: Rect, buf: &mut RingDataBuffer) {
 
 }
 
-fn ring(canvas: &mut Canvas<Window>, viztype: &mut RingVizType) {
+fn ring(canvas: &mut Canvas<Window>, 
+        viztype: &mut RingVizType,
+        textq: Arc<Mutex<VecDeque<String>>>) {
+    let msg = textq.lock().unwrap().pop_front();
+    if msg.is_some() {
+        println!("I GOT MSG {:?}", msg);
+    }
     let (width, height) = canvas.window().size();
     let half_height: i32 = height as i32 / 2;
     let half_width: i32 = width as i32 / 2;
@@ -73,16 +80,21 @@ fn ring(canvas: &mut Canvas<Window>, viztype: &mut RingVizType) {
 
 }
 
-fn io_reader(textq: VecDeque<char>) {
-    for line in std::io::stdin().lines() {
-            println!(line.ok().unwrap());
-            //line.ok().unwrap().each()
+fn io_reader(textq: Arc<Mutex<VecDeque<String>>>) {
+    let sin = std::io::stdin();
+    for line in sin.lock().lines() {
+            let line = line.unwrap();
+            println!("Entered: {:?}",line.clone());
+            textq.lock().unwrap().push_back(line);
     }
 }
 
 pub fn main() {
-    let textq: VecDeque <char> = VecDeque:::new();
-    thread::spawn(|| { io_reader(); });
+    let textq: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
+    {
+        let textqclone = textq.clone();
+        thread::spawn(move|| { io_reader(textqclone); });
+    }
 
     let mut viztype = RingVizType::Hist;
 
@@ -114,6 +126,6 @@ pub fn main() {
             }
         }
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-        ring(&mut canvas, &mut viztype);
+        ring(&mut canvas, &mut viztype, textq.clone());
     }
 }
