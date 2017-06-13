@@ -10,12 +10,15 @@ use sdl2::gfx::primitives::DrawRenderer;
 use sdl2::rect::Rect;
 
 use std::time::Duration;
+
 use std::thread;
-use std::collections::HashMap;
-use std::collections::VecDeque;
 use std::io::{stdin, BufRead};
 use std::sync::{Arc, Mutex};
 
+use std::collections::HashMap;
+use std::collections::VecDeque;
+
+use std::slice::Split;
 
 // parse args
 //  data type
@@ -62,7 +65,9 @@ fn ring(canvas: &mut Canvas<Window>,
         textq: Arc<Mutex<VecDeque<String>>>) {
     let msg = textq.lock().unwrap().pop_front();
     if msg.is_some() {
+        let msgstr = msg.unwrap();
         println!("I GOT MSG {:?}", msg);
+        let mut iter = msg.split();
     }
     let (width, height) = canvas.window().size();
     let half_height: i32 = height as i32 / 2;
