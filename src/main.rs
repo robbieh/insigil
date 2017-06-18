@@ -20,6 +20,12 @@ use std::collections::VecDeque;
 
 use std::slice::Split;
 
+
+mod data_acquisition;
+mod state;
+
+
+
 // parse args
 //  data type
 //  viz type
@@ -36,18 +42,6 @@ use std::slice::Split;
 // text
 //
 //
-enum RingVizType {
-    Hist, Interval, Text
-}
-
-// need... a data structure to fill from the thread
-
-enum RingDataBuffer {
-    Ints(VecDeque<i32>),
-    Text(VecDeque<char>),
-    Dates(VecDeque<i32>)
-}
-
 
 macro_rules! rect(
     ($x:expr, $y:expr, $w:expr, $h:expr) => (
@@ -55,20 +49,17 @@ macro_rules! rect(
     )
 );
 
-fn hist_ring(canvas: &mut Canvas<Window>, r: Rect, buf: &mut RingDataBuffer) {
+
+fn hist_ring(canvas: &mut Canvas<Window>, r: Rect, buf: &mut state::RingDataBuffer) {
     //^^^pass canvas? or some sort of trait, like canvas.circle?
 
 }
 
 fn ring(canvas: &mut Canvas<Window>, 
-        viztype: &mut RingVizType,
-        textq: Arc<Mutex<VecDeque<String>>>) {
-    let msg = textq.lock().unwrap().pop_front();
-    if msg.is_some() {
-        let msgstr = msg.unwrap();
-        println!("I GOT MSG {:?}", msg);
-        let mut iter = msg.split();
-    }
+        world: &mut state::WorldState,
+        //rdbvec: &mut Vec<RingDataBuffer>,
+        //textq: Arc<Mutex<VecDeque<String>>>
+        ) {
     let (width, height) = canvas.window().size();
     let half_height: i32 = height as i32 / 2;
     let half_width: i32 = width as i32 / 2;
@@ -81,27 +72,30 @@ fn ring(canvas: &mut Canvas<Window>,
     let color = Color::RGB(0,255,0);
     //let _ = canvas.set_viewport(r);
     let _ = canvas.circle(half_width as i16,half_height as i16,50,color);
+
+
     canvas.present();
 
 }
 
-fn io_reader(textq: Arc<Mutex<VecDeque<String>>>) {
-    let sin = std::io::stdin();
-    for line in sin.lock().lines() {
-            let line = line.unwrap();
-            println!("Entered: {:?}",line.clone());
-            textq.lock().unwrap().push_back(line);
-    }
-}
+
 
 pub fn main() {
-    let textq: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
+    //let textq: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
+    let mut world = state::WorldState {
+        ioq: VecDeque::<state::Actions>::new(),
+        data: Vec::<state::RingDataBuffer>::new(),
+    };
+
+
     {
-        let textqclone = textq.clone();
-        thread::spawn(move|| { io_reader(textqclone); });
+        //let textqclone = textq.clone();
+        thread::spawn(move|| { data_acquisition::io_reader(&mut world.clone()); });
     }
 
-    let mut viztype = RingVizType::Hist;
+    let mut viztype = state::RingVizType::Hist;
+    let mut rdbvec = Vec::<state::RingDataBuffer>::new();
+    rdbvec.push(state::RingDataBuffer::new(state::RingDataBufferType::Ints));
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -131,6 +125,6 @@ pub fn main() {
             }
         }
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-        ring(&mut canvas, &mut viztype, textq.clone());
+        ring(&mut canvas, &mut world);
     }
 }
