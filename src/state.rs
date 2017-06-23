@@ -1,11 +1,18 @@
 use std::collections::VecDeque;
 
+use std::sync::{Arc, Mutex};
 
 pub enum RingVizType {
     Hist, Interval, Text
 }
 
 // need... a data structure to fill from the thread
+
+pub enum RingData {
+    Int(i32),
+    Text(String),
+    Date(i32)
+}
 
 pub enum RingDataBuffer {
     Ints(VecDeque<i32>),

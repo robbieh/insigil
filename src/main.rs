@@ -15,6 +15,9 @@ use std::thread;
 use std::io::{stdin, BufRead};
 use std::sync::{Arc, Mutex};
 
+use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc;
+
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
@@ -56,9 +59,10 @@ fn hist_ring(canvas: &mut Canvas<Window>, r: Rect, buf: &mut state::RingDataBuff
 }
 
 fn ring(canvas: &mut Canvas<Window>, 
-        world: &mut state::WorldState,
-        //rdbvec: &mut Vec<RingDataBuffer>,
+        //world: &mut state::WorldState,
+        //rdbvec: &mut Vec<state::RingDataBuffer>,
         //textq: Arc<Mutex<VecDeque<String>>>
+        rdbints: &mut state::RingDataBuffer
         ) {
     let (width, height) = canvas.window().size();
     let half_height: i32 = height as i32 / 2;
@@ -78,24 +82,36 @@ fn ring(canvas: &mut Canvas<Window>,
 
 }
 
+pub fn handle_io_rx(rxdata: &mut Receiver<state::RingData>, ) {
+    for rdin in rxdata.try_iter() {
+        match rdin {
+            state::RingData::Int(i) => {
+                println!("Got an int {:?}", i)
+            },
+            state::RingData::Text(s) => {},
+            state::RingData::Date(i) => {},
 
+        }
+    }
+}
 
 pub fn main() {
     //let textq: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
-    let mut world = state::WorldState {
-        ioq: VecDeque::<state::Actions>::new(),
-        data: Vec::<state::RingDataBuffer>::new(),
-    };
+    //let mut world = state::WorldState {
+    //    ioq: VecDeque::<state::Actions>::new(),
+    //    data: Vec::<state::RingDataBuffer>::new(),
+    //};
 
-
+    let (txdata,mut rxdata): (Sender<state::RingData>, Receiver<state::RingData>) = mpsc::channel();
     {
-        //let textqclone = textq.clone();
-        thread::spawn(move|| { data_acquisition::io_reader(&mut world.clone()); });
+        let thread_tx = txdata.clone();
+        thread::spawn(move|| { data_acquisition::io_reader(thread_tx); });
     }
 
     let mut viztype = state::RingVizType::Hist;
     let mut rdbvec = Vec::<state::RingDataBuffer>::new();
     rdbvec.push(state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    let mut rdbints = state::RingDataBuffer::new(state::RingDataBufferType::Ints);
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -113,7 +129,10 @@ pub fn main() {
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
 
+
     'running: loop {
+        handle_io_rx(&mut rxdata);
+        
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} | Event::KeyDown { 
@@ -125,6 +144,6 @@ pub fn main() {
             }
         }
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-        ring(&mut canvas, &mut world);
+        ring(&mut canvas, &mut rdbints);
     }
 }

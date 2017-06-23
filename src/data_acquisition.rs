@@ -2,16 +2,26 @@
 extern crate std;
 use std::io::{stdin, BufRead};
 use state;
+use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc;
 
-pub fn io_reader(world: &mut state::WorldState
+pub fn io_reader(txdata: Sender<state::RingData>
     //textq: Arc<Mutex<VecDeque<String>>>
     ) {
     let sin = std::io::stdin();
     for line in sin.lock().lines() {
             let line = line.unwrap();
             println!("Entered: {:?}",line.clone());
+            let in_int = match line.parse::<i32>() {
+                Ok(i) => i,
+                Err(msg) => {
+                    println!("Expected an int, but got: {:?}", msg);
+                    0
+                }
+            };
             //textq.lock().unwrap().push_back(line);
-
+            let rdint = state::RingData::Int(in_int);
+            txdata.send(rdint).unwrap();
     }
     //let msg = textq.lock().unwrap().pop_front();
     //if msg.is_some() {
