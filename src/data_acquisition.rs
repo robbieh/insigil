@@ -12,6 +12,10 @@ pub fn io_reader(txdata: Sender<state::RingData>
     for line in sin.lock().lines() {
             let line = line.unwrap();
             println!("Entered: {:?}",line.clone());
+            match line.clone().as_ref()  {
+                "q" => ::std::process::exit(0),
+                _ => {}
+            }
             let in_int = match line.parse::<i32>() {
                 Ok(i) => i,
                 Err(msg) => {
