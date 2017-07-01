@@ -23,13 +23,15 @@ use std::collections::VecDeque;
 
 use std::slice::Split;
 
-use std::cmp::{min,max};
 
 mod data_acquisition;
 mod state;
+mod viz;
+
 
 pub struct App {
-    gl: GlGraphics
+    gl: GlGraphics,
+    rdbints: state::RingDataBuffer
 }
 
 
@@ -42,10 +44,12 @@ impl App {
 
         let square = rectangle::square(0.0, 0.0, 50.0);
         let (x,y) = ((args.width/2) as f64, (args.height/2) as f64);
+        let rdbi = &mut self.rdbints;
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
             let transform = c.transform.trans(x,y);
             rectangle(GREEN, square, transform, gl);
+            viz::ring(gl, rdbi);
         });
     }
 
@@ -73,53 +77,6 @@ impl App {
 //
 
 
-fn ring(//mut canvas: &mut Canvas<Window>, 
-        rdbints: &mut state::RingDataBuffer
-        ) {
-    let (width, height) = (100, 100);
-    let half_height: i32 = height as i32 / 2;
-    let half_width: i32 = width as i32 / 2;
-
-    //calculate stuff
-    let (sum,max,avg) = match rdbints {
-        &mut state::RingDataBuffer::Ints(ref mut intvec) => 
-            { 
-            let sum = intvec.iter().sum();
-            let max = intvec.iter().fold(0,|largest, &i| max(i, largest));
-            let avg: f32 = sum as f32/ intvec.len() as f32;
-            (sum,max,avg)
-            },
-        _ => (0,0,0.0)
-    };
-    println!("s,m,a: {:?} {:?} {:?}", sum, max, avg);
-
-    let rad: f32 = if half_width < half_height {half_height as f32} else {half_width as f32};
-    //draw stuff
-    //match rdbints {
-    //    &mut state::RingDataBuffer::Ints(ref intvec) => 
-    //}
-
-}
-
-pub fn handle_io_rx(rxdata: &mut Receiver<state::RingData>, 
-                    rdbints: &mut state::RingDataBuffer
-                    ) {
-    for rdin in rxdata.try_iter() {
-        match rdin {
-            state::RingData::Int(i) => {
-                println!("Got an int {:?}", i.clone());
-                match rdbints {
-                    &mut state::RingDataBuffer::Ints(ref mut intvec) => intvec.push_back(i),
-                    _ => {}
-                }
-            },
-            state::RingData::Text(s) => {},
-            state::RingData::Date(i) => {},
-
-        }
-    }
-}
-
 pub fn main() {
     //let textq: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
     //let mut world = state::WorldState {
@@ -146,11 +103,13 @@ pub fn main() {
         .unwrap();
 
     let mut app = App {
-        gl: GlGraphics::new(opengl)
+        gl: GlGraphics::new(opengl),
+        rdbints: rdbints
     };
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
+
         if let Some(r) = e.render_args() { app.render(&r); }
         if let Some(u) = e.update_args() { app.update(&u); }
     }

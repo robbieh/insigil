@@ -11,7 +11,7 @@ pub fn io_reader(txdata: Sender<state::RingData>
     let sin = std::io::stdin();
     for line in sin.lock().lines() {
             let line = line.unwrap();
-            println!("Entered: {:?}",line.clone());
+            println!("\nEntered: {:?}\n",line.clone());
             match line.clone().as_ref()  {
                 "q" => ::std::process::exit(0),
                 _ => {}
