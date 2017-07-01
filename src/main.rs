@@ -44,12 +44,13 @@ impl App {
 
         let square = rectangle::square(0.0, 0.0, 50.0);
         let (x,y) = ((args.width/2) as f64, (args.height/2) as f64);
+        let ringBounds = graphics::rectangle::square(0.0, 0.0, x );
         let rdbi = &mut self.rdbints;
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
             let transform = c.transform.trans(x,y);
             rectangle(GREEN, square, transform, gl);
-            viz::ring(gl, rdbi);
+            viz::ring(ringBounds, transform, gl, rdbi);
         });
     }
 
@@ -76,6 +77,25 @@ impl App {
 //
 //
 
+
+pub fn handle_io_rx(rxdata: &mut Receiver<state::RingData>, 
+                    rdbints: &mut state::RingDataBuffer
+                    ) {
+    for rdin in rxdata.try_iter() {
+        match rdin {
+            state::RingData::Int(i) => {
+                println!("Got an int {:?}", i.clone());
+                match rdbints {
+                    &mut state::RingDataBuffer::Ints(ref mut intvec) => intvec.push_back(i),
+                    _ => {}
+                }
+            },
+            state::RingData::Text(s) => {},
+            state::RingData::Date(i) => {},
+
+        }
+    }
+}
 
 pub fn main() {
     //let textq: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
@@ -109,7 +129,7 @@ pub fn main() {
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
-
+        handle_io_rx(&mut rxdata, &mut app.rdbints);
         if let Some(r) = e.render_args() { app.render(&r); }
         if let Some(u) = e.update_args() { app.update(&u); }
     }

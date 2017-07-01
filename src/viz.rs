@@ -1,11 +1,20 @@
 
+extern crate piston;
+extern crate graphics;
+extern crate opengl_graphics;
+
 use state;
 use std::cmp::{min,max};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
+use graphics::*;
 
-pub fn ring(gl: & ::opengl_graphics::GlGraphics,
+const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
+pub fn ring<G>(
+        ringbounds: [f64; 4],
+        transform: math::Matrix2d,
+        g: &mut G,
         rdbints: &mut state::RingDataBuffer
-        ) {
+        ) where G: Graphics {
     let (width, height) = (100, 100);
     let half_height: i32 = height as i32 / 2;
     let half_width: i32 = width as i32 / 2;
@@ -24,9 +33,17 @@ pub fn ring(gl: & ::opengl_graphics::GlGraphics,
     };
 
     let rad: f32 = if half_width < half_height {half_height as f32} else {half_width as f32};
+    
     //draw stuff
-    //match rdbints {
-    //    &mut state::RingDataBuffer::Ints(ref intvec) => 
-    //}
+    match rdbints {
+        &mut state::RingDataBuffer::Ints(ref intvec) => {
+            for i in intvec.iter() {
+                let bounds = rectangle::square(0.0, i.clone() as f64, 10.0);
+                ellipse(GREEN, bounds, transform, g);
+            }
+        }
+        _ => {}
+            
+    }
 
 }
