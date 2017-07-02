@@ -44,13 +44,15 @@ impl App {
 
         let square = rectangle::square(0.0, 0.0, 50.0);
         let (x,y) = ((args.width/2) as f64, (args.height/2) as f64);
-        let ringBounds = graphics::rectangle::square(0.0, 0.0, x );
+        let ringBounds = graphics::rectangle::centered([0.0,0.0,x,y]);
+        let halfRingBounds = graphics::rectangle::centered([0.0,0.0,(x/2.0),(y/2.0)]);
         let rdbi = &mut self.rdbints;
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
             let transform = c.transform.trans(x,y);
-            rectangle(GREEN, square, transform, gl);
-            viz::ring(ringBounds, transform, gl, rdbi);
+            //rectangle(GREEN, square, transform, gl);
+            viz::ring(ringBounds, transform, gl, rdbi, 100.0);
+            viz::ring(halfRingBounds, transform, gl, rdbi, 100.0);
         });
     }
 
@@ -81,12 +83,17 @@ impl App {
 pub fn handle_io_rx(rxdata: &mut Receiver<state::RingData>, 
                     rdbints: &mut state::RingDataBuffer
                     ) {
+    let maxints = 32;
     for rdin in rxdata.try_iter() {
         match rdin {
             state::RingData::Int(i) => {
                 println!("Got an int {:?}", i.clone());
                 match rdbints {
-                    &mut state::RingDataBuffer::Ints(ref mut intvec) => intvec.push_back(i),
+                    &mut state::RingDataBuffer::Ints(ref mut intvec) => {
+                        intvec.push_back(i);
+                        if intvec.len() >= maxints 
+                            {let x = intvec.pop_front();}
+                    },
                     _ => {}
                 }
             },
@@ -118,6 +125,7 @@ pub fn main() {
     let opengl = OpenGL::V3_2;
     let mut window: Window = WindowSettings::new("twirl", [640,640])
         .opengl(opengl)
+        .samples(8)
         .exit_on_esc(true)
         .build()
         .unwrap();
