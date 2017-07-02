@@ -42,17 +42,19 @@ impl App {
     fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        let square = rectangle::square(0.0, 0.0, 50.0);
-        let (x,y) = ((args.width/2) as f64, (args.height/2) as f64);
-        let ringBounds = graphics::rectangle::centered([0.0,0.0,x,y]);
-        let halfRingBounds = graphics::rectangle::centered([0.0,0.0,(x/2.0),(y/2.0)]);
+        //let square = rectangle::square(0.0, 0.0, 50.0);
+        let (x,y) = ((args.width as f64/2.0), (args.height as f64/2.0));
+        let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
+        let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
+        let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
         let rdbi = &mut self.rdbints;
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
             let transform = c.transform.trans(x,y);
             //rectangle(GREEN, square, transform, gl);
-            viz::ring(ringBounds, transform, gl, rdbi, 100.0);
-            viz::ring(halfRingBounds, transform, gl, rdbi, 100.0);
+            viz::ring(ringBounds, transform, gl, rdbi, 64.0);
+            viz::ring(ringBounds1, transform, gl, rdbi, 64.0);
+            viz::ring(ringBounds2, transform, gl, rdbi, 64.0);
         });
     }
 
@@ -83,7 +85,7 @@ impl App {
 pub fn handle_io_rx(rxdata: &mut Receiver<state::RingData>, 
                     rdbints: &mut state::RingDataBuffer
                     ) {
-    let maxints = 32;
+    let maxints = 256;
     for rdin in rxdata.try_iter() {
         match rdin {
             state::RingData::Int(i) => {

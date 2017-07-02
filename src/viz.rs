@@ -17,8 +17,8 @@ pub fn ring<G>(
         rdbints: &mut state::RingDataBuffer,
         size: f64
         ) where G: Graphics {
-    let width = ((ringbounds[0]).abs() - (ringbounds[2]).abs()).abs();
-    let height = ((ringbounds[1]).abs() - (ringbounds[3]).abs()).abs();
+    let width = ringbounds[2];
+    let height = ringbounds[3];
     let half_height = height / 2.0;
     let half_width = width / 2.0;
     let radius = f64::min(width, height) / 2.0;
@@ -31,11 +31,13 @@ pub fn ring<G>(
             let sum = intvec.iter().sum();
             let max = intvec.iter().fold(0,|largest, &i| max(i, largest));
             let avg: f32 = sum as f32/ intvec.len() as f32;
-            print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
+            //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
             (sum,max,avg)
             },
         _ => (0,0,0.0)
     };
+    let working = (radius - buffer - (radius - size)) as f64;
+    let scale = working / max as f64;
 
     
     //draw stuff
@@ -45,8 +47,8 @@ pub fn ring<G>(
             for (idx, i) in intvec.iter().enumerate() {
                 let t = transform.rot_rad(0.031415 * idx as f64);
                 let line = rectangle::rectangle_by_corners(
-                    3.0, (2.0 * radius - buffer),
-                    -3.0, (2.0 * radius - buffer) - i.clone() as f64,
+                    3.0, (radius - buffer),
+                    -3.0, (radius - buffer) - (i.clone() as f64 * scale),
                                                            );
                 //println!("{:?}", line);
                 rectangle(GREEN_05, line, t, g);
