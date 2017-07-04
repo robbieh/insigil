@@ -41,8 +41,3 @@ pub enum Actions {
 }
 
 
-pub struct WorldState {
-    pub ioq: VecDeque<Actions>,
-    pub data: Arc<Vec<RingDataBuffer>>
-}
-
