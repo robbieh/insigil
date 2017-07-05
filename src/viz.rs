@@ -47,7 +47,7 @@ impl<G> Widget<G> for HistoRing
         g: &mut G,
         //size: f64
         ) where G: Graphics {
-    let radius = self.size / 2.0;
+    let radius = self.size * 0.5;
     let buffer = 5.0;
     let mut rdbints = VecDeque::<i32>::new();
 
@@ -62,18 +62,19 @@ impl<G> Widget<G> for HistoRing
     let working = (radius - buffer - (radius - self.size)) as f64;
     let scale = working / max as f64;
 
-    let ringbounds=rectangle::rectangle_by_corners
-        (self.x - radius, 
-        self.y - radius,
-        self.x + radius, 
-        self.x + radius );
+    let ringbounds=rectangle::centered
+        ([self.x,
+        self.y,
+        self.size, 
+        self.size]);
     //draw stuff
+    //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
     circle_arc(GREEN_05, 1.0, 0.0, 6.282, ringbounds, transform, g);
         for (idx, i) in rdbints.iter().enumerate() {
             let t = transform.rot_rad(0.031415 * idx as f64);
-            let line = rectangle::rectangle_by_corners(
-                3.0, (radius - buffer),
-                -3.0, (radius - buffer) - (i.clone() as f64 * scale),
+            let line = rectangle::centered(
+                [0.0, 0.0, (radius - buffer),
+                 (radius - buffer) - (i.clone() as f64 * scale)]
                                                        );
             //println!("{:?}", line);
             rectangle(GREEN_05, line, t, g);

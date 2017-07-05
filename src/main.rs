@@ -48,22 +48,22 @@ const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 impl App {
     fn render(&mut self, args: &RenderArgs) {
 
-        //let square = rectangle::square(0.0, 0.0, 50.0);
+        let square = rectangle::centered_square(0.0, 0.0, 10.0);
         let (x,y) = ((args.width as f64/2.0), (args.height as f64/2.0));
         //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
         //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
         //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
         //let rdbi = &mut self.rdbints;
         //
-        let widgetz = & mut self.widgets;
+        let widgets = & mut self.widgets;
         
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
-            let transform = c.transform.trans(x,y);
-            for widget in widgetz.iter_mut() {
-                widget.draw(transform, gl);
+            let transform = c.transform.trans(110.0,530.0);
+            for widget in widgets.iter_mut() {
+                //widget.draw(transform, gl);
             }
-            //rectangle(GREEN, square, transform, gl);
+        rectangle(GREEN, square, transform, gl);
             //viz::ring(ringBounds, transform, gl, rdbi, 64.0);
             //viz::ring(ringBounds1, transform, gl, rdbi, 64.0);
             //viz::ring(ringBounds2, transform, gl, rdbi, 64.0);
@@ -171,12 +171,12 @@ pub fn main() {
            
     };
     let (x,y) = (window.size().width as f64, window.size().height as f64);
-    let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
-    let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
-    let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
-    let hr1 = viz::HistoRing::new(0.0, 0.0, 640.0);
-    let hr2 = viz::HistoRing::new(0.0, 0.0, 480.0);
-    let hr3 = viz::HistoRing::new(0.0, 0.0, 320.0);
+    //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
+    //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
+    //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
+    let hr1 = viz::HistoRing::new(0.0, 0.0, 320.0);
+    let hr2 = viz::HistoRing::new(0.0, 0.0, 160.0);
+    let hr3 = viz::HistoRing::new(0.0, 0.0, 80.0);
     app.widgets.push(Box::new(hr1));
     app.widgets.push(Box::new(hr2));
     app.widgets.push(Box::new(hr3));
