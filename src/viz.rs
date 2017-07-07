@@ -27,13 +27,13 @@ const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const GREEN_05: [f32; 4] = [0.0, 1.0, 0.0, 0.5];
 
 impl HistoRing {
-    pub fn new(x: f64, y: f64, size: f64) -> HistoRing {
+    pub fn new(x: f64, y: f64, size: f64, dat: state::RingDataBuffer) -> HistoRing {
         HistoRing { 
             sliding: false,
             targetTmMs: time::now(),
             size: size,
             x: x, y: y,
-            //rdbints: none
+            dat: dat
          }
     }
 }
@@ -46,6 +46,7 @@ impl<G> Widget<G> for HistoRing
         transform: math::Matrix2d,
         g: &mut G,
         //size: f64
+        dat: RingDataBuffer,
         ) where G: Graphics {
     let radius = self.size * 0.5;
     let buffer = 5.0;
@@ -62,24 +63,27 @@ impl<G> Widget<G> for HistoRing
     let working = (radius - buffer - (radius - self.size)) as f64;
     let scale = working / max as f64;
 
-    let ringbounds=rectangle::centered
-        ([self.x,
+    let ringbounds=rectangle::centered_square
+        (self.x,
         self.y,
-        self.size, 
-        self.size]);
+        self.size / 2.0);
     //draw stuff
     //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
     circle_arc(GREEN_05, 1.0, 0.0, 6.282, ringbounds, transform, g);
-        for (idx, i) in rdbints.iter().enumerate() {
-            let t = transform.rot_rad(0.031415 * idx as f64);
-            let line = rectangle::centered(
-                [0.0, 0.0, (radius - buffer),
-                 (radius - buffer) - (i.clone() as f64 * scale)]
-                                                       );
-            //println!("{:?}", line);
-            rectangle(GREEN_05, line, t, g);
-
+    match dat {
+        RingDataBuffer::Ints(rdbints) => {
+            for (idx, i) in rdbints.iter().enumerate() {
+                let t = transform.rot_rad(0.031415 * idx as f64);
+                let line = rectangle::centered(
+                    [0.0, 0.0, (radius - buffer),
+                     (radius - buffer) - (i.clone() as f64 * scale)]
+                                                   );
+            },
+        RingDataBuffer::Text(text) => {
+            println!("{:?}", text);
         }
+
+    }
         
 
     }

@@ -23,6 +23,7 @@ use std::sync::mpsc;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+use std::cmp::{min,max};
 use std::slice::Split;
 
 use time::Timespec;
@@ -43,12 +44,12 @@ pub struct App {
 
 
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
+const GREEN_10: [f32; 4] = [0.0, 1.0, 0.0, 0.1];
 const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {
 
-        let square = rectangle::centered_square(0.0, 0.0, 10.0);
         let (x,y) = ((args.width as f64/2.0), (args.height as f64/2.0));
         //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
         //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
@@ -61,9 +62,30 @@ impl App {
             clear(BLACK,gl);
             let transform = c.transform.trans(110.0,530.0);
             for widget in widgets.iter_mut() {
-                //widget.draw(transform, gl);
+                widget.draw(transform, gl);
             }
-        rectangle(GREEN, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 10.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 20.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 30.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 40.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 50.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 60.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 70.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 80.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 90.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 100.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
+        let square = rectangle::centered_square(0.0, 0.0, 200.0/2.0);
+        rectangle(GREEN_10, square, transform, gl);
             //viz::ring(ringBounds, transform, gl, rdbi, 64.0);
             //viz::ring(ringBounds1, transform, gl, rdbi, 64.0);
             //viz::ring(ringBounds2, transform, gl, rdbi, 64.0);
@@ -151,8 +173,8 @@ pub fn main() {
     }
 
     let mut viztype = state::RingVizType::Hist;
-    let mut rdbvec = Vec::<state::RingDataBuffer>::new();
-    rdbvec.push(state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    //let mut rdbvec = Vec::<state::RingDataBuffer>::new();
+    //rdbvec.push(state::RingDataBuffer::new(state::RingDataBufferType::Ints));
     //let mut rdbints = state::RingDataBuffer::new(state::RingDataBufferType::Ints);
     let mut rdbints = VecDeque::<i32>::new();
 
@@ -171,12 +193,15 @@ pub fn main() {
            
     };
     let (x,y) = (window.size().width as f64, window.size().height as f64);
+    let sz1 = x.min(y) as f64 / 2.0;
+    let sz2 = sz1 / 3.0 * 2.0;
+    let sz3 = sz1 / 3.0;
     //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
     //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
     //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
-    let hr1 = viz::HistoRing::new(0.0, 0.0, 320.0);
-    let hr2 = viz::HistoRing::new(0.0, 0.0, 160.0);
-    let hr3 = viz::HistoRing::new(0.0, 0.0, 80.0);
+    let hr1 = viz::HistoRing::new(0.0, 0.0, sz1);
+    let hr2 = viz::HistoRing::new(0.0, 0.0, sz2);
+    let hr3 = viz::HistoRing::new(0.0, 0.0, sz3);
     app.widgets.push(Box::new(hr1));
     app.widgets.push(Box::new(hr2));
     app.widgets.push(Box::new(hr3));

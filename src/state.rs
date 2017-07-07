@@ -11,24 +11,27 @@ pub enum RingVizType {
 pub enum RingData {
     Int(i32),
     Text(String),
-    Date(i32)
+    Date((i32,i32))
 }
 
 pub enum RingDataBuffer {
     Ints(VecDeque<i32>),
     Text(VecDeque<char>),
-    Dates(VecDeque<i32>)
+    DatedInts(VecDeque<(i32,i32)>)
 }
 
-pub enum RingDataBufferType { Ints, Text, Dates }
+pub enum RingDataBufferType { Ints, Text, DatedInts }
 
 impl RingDataBuffer {
     pub fn new(t: RingDataBufferType) -> RingDataBuffer {
-            match t {
-                RingDataBufferType::Ints => RingDataBuffer::Ints(VecDeque::new()),
-                RingDataBufferType::Text => RingDataBuffer::Text(VecDeque::new()),
-                RingDataBufferType::Dates => RingDataBuffer::Dates(VecDeque::new())
-            }
+        match t {
+            RingDataBufferType::Ints => 
+                RingDataBuffer::Ints(VecDeque::new()),
+            RingDataBufferType::Text => 
+                RingDataBuffer::Text(VecDeque::new()),
+            RingDataBufferType::DatedInts => 
+                RingDataBuffer::DatedInts(VecDeque::new())
+        }
     }
 }
 
