@@ -61,36 +61,11 @@ impl App {
         
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
-            //let transform = c.transform.trans(110.0,530.0);
-            let transform = c.transform.trans(x,y);
+            let transform = c.transform.trans(110.0,530.0);
+            //let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
                 widget.draw(transform, gl);
             }
-        let square = rectangle::centered_square(0.0, 0.0, 10.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 20.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 30.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 40.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 50.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 60.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 70.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 80.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 90.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 100.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-        let square = rectangle::centered_square(0.0, 0.0, 200.0/2.0);
-        rectangle(GREEN_10, square, transform, gl);
-            //viz::ring(ringBounds, transform, gl, rdbi, 64.0);
-            //viz::ring(ringBounds1, transform, gl, rdbi, 64.0);
-            //viz::ring(ringBounds2, transform, gl, rdbi, 64.0);
         });
     }
 
@@ -213,12 +188,12 @@ pub fn main() {
     //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
     //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
     //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
-    let hr1 = viz::HistoRing::new(0.0, 0.0, sz1, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
-    let hr2 = viz::HistoRing::new(0.0, 0.0, sz2, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
-    let hr3 = viz::HistoRing::new(0.0, 0.0, sz3, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    let hr1 = viz::HistoRing::new(0.0, 0.0, sz2, 50.0, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    //let hr2 = viz::HistoRing::new(0.0, 0.0, sz2, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    //let hr3 = viz::HistoRing::new(0.0, 0.0, sz3, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
     app.widgets.push(Box::new(hr1));
-    app.widgets.push(Box::new(hr2));
-    app.widgets.push(Box::new(hr3));
+    //app.widgets.push(Box::new(hr2));
+    //app.widgets.push(Box::new(hr3));
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {

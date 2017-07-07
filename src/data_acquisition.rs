@@ -17,28 +17,28 @@ pub fn io_reader(txdata: Sender<state::ChannelData>,
                 "q" => ::std::process::exit(0),
                 _ => {}
             }
-            let in_int = match line.parse::<i32>() {
-                Ok(i) => i,
+            match line.parse::<i32>() {
+                Ok(i) => {
+                    let rdint = state::RingData::Int(i);
+                    let cdat = state::ChannelData { id: id, dat: rdint };
+                    txdata.send(cdat).unwrap();
+                },
                 Err(msg) => {
                     println!("Expected an int, but got: {:?}", msg);
-                    0
                 }
-            };
+            }
             //textq.lock().unwrap().push_back(line);
-            let rdint = state::RingData::Int(in_int);
-            let cdat = state::ChannelData { id: id, dat: rdint };
-            txdata.send(cdat).unwrap();
     }
     //let msg = textq.lock().unwrap().pop_front();
     //if msg.is_some() {
     //    let msgstr: String = msg.unwrap();
-   //     println!("I GOT MSG {:?}", msgstr.clone());
-        //let mut iter = msgstr.split(' ');
+    //     println!("I GOT MSG {:?}", msgstr.clone());
+    //let mut iter = msgstr.split(' ');
     //    let v: Vec<&str> = msgstr.split(' ').collect();
-        //iter.map(|num| println!("N: {:?}",num ));
-     //   for i in v {
-      //      println!("i: {:?}",i.clone()); 
-            //rdbvec.get(0). 
+    //iter.map(|num| println!("N: {:?}",num ));
+    //   for i in v {
+    //      println!("i: {:?}",i.clone()); 
+    //rdbvec.get(0). 
     //    }
 
 }

@@ -19,6 +19,7 @@ pub struct HistoRing {
     sliding: bool,
     targetTmMs: Tm,
     size: f64,
+    innerrad: f64,
     x: f64,
     y: f64,
     id: i32,
@@ -29,11 +30,12 @@ const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const GREEN_05: [f32; 4] = [0.0, 1.0, 0.0, 0.5];
 
 impl HistoRing {
-    pub fn new(x: f64, y: f64, size: f64, id: i32, dat: state::RingDataBuffer) -> HistoRing {
+    pub fn new(x: f64, y: f64, size: f64, innerrad: f64, id: i32, dat: state::RingDataBuffer) -> HistoRing {
         HistoRing { 
             sliding: false,
             targetTmMs: time::now(),
             size: size,
+            innerrad: innerrad,
             x: x, y: y,
             id: id, dat: dat
          }
@@ -51,19 +53,9 @@ impl<G> Widget<G> for HistoRing
         ) where G: Graphics {
     let radius = self.size * 0.5;
     let buffer = 5.0;
-    let mut rdbints = VecDeque::<i32>::new();
     let ref mut dat = self.dat;
 
     //calculate stuff
-    let (sum,max,avg) = {
-            let sum: i32 = rdbints.iter().sum();
-            let max = rdbints.iter().fold(0,|largest, &i| max(i, largest));
-            let avg: f32 = sum as f32 / rdbints.len() as f32;
-            //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
-            (sum,max,avg)
-    };
-    let working = (radius - buffer - (radius - self.size)) as f64;
-    let scale = working / max as f64;
 
     let ringbounds=rectangle::centered_square
         (self.x,
@@ -74,14 +66,24 @@ impl<G> Widget<G> for HistoRing
     circle_arc(GREEN_05, 1.0, 0.0, 6.282, ringbounds, transform, g);
     match *dat {
         RingDataBuffer::Ints(ref intsq) => {
+            let (sum,max,avg) = {
+                    let sum: i32 = intsq.iter().sum();
+                    let max = intsq.iter().fold(0,|largest, &i| max(i, largest));
+                    let avg: f32 = sum as f32 / intsq.len() as f32;
+                    //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
+                    (sum,max,avg)
+            };
+            let working = (radius - buffer - (radius - self.innerrad)) as f64;
+            let scale = working / max as f64;
             for (idx, i) in intsq.iter().enumerate() {
-                //println!("draw {:?}", i.clone());
+                //println!("draw {:?} {:?}", idx, i.clone());
                 let t = transform.rot_rad(0.031415 * idx as f64);
-                let line = rectangle::centered(
-                    [0.0, 0.0, (radius - buffer),
-                     (radius - buffer) - (i.clone() as f64 * scale)]
+                let line = rectangle::rectangle_by_corners(
+                    3.0, (1.0 * radius - buffer),
+                     -3.0, (1.0 * radius - buffer) - (i.clone() as f64 * scale)
                                                    );
-                rectangle(GREEN_05, line, transform, g);
+            //println!("{:?}", line);
+                rectangle(GREEN_05, line, t, g);
             }
         },
         RingDataBuffer::Text(ref text) => {
