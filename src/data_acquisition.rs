@@ -5,8 +5,9 @@ use state;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
 
-pub fn io_reader(txdata: Sender<state::RingData>
+pub fn io_reader(txdata: Sender<state::ChannelData>,
     //textq: Arc<Mutex<VecDeque<String>>>
+    id: i32
     ) {
     let sin = std::io::stdin();
     for line in sin.lock().lines() {
@@ -25,7 +26,8 @@ pub fn io_reader(txdata: Sender<state::RingData>
             };
             //textq.lock().unwrap().push_back(line);
             let rdint = state::RingData::Int(in_int);
-            txdata.send(rdint).unwrap();
+            let cdat = state::ChannelData { id: id, dat: rdint };
+            txdata.send(cdat).unwrap();
     }
     //let msg = textq.lock().unwrap().pop_front();
     //if msg.is_some() {

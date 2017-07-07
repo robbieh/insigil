@@ -38,7 +38,8 @@ use graphics::*;
 
 pub struct App {
     gl: GlGraphics,
-    widgets: Vec<Box<Widget<GlGraphics>>>
+    widgets: Vec<Box<Widget<GlGraphics>>>,
+    rxchan: Receiver<state::ChannelData>
     //irs: state::intRingState
 }
 
@@ -60,7 +61,8 @@ impl App {
         
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
-            let transform = c.transform.trans(110.0,530.0);
+            //let transform = c.transform.trans(110.0,530.0);
+            let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
                 widget.draw(transform, gl);
             }
@@ -93,7 +95,19 @@ impl App {
     }
 
     fn update(&mut self, args: &UpdateArgs) {
-        //
+    }
+    fn receive(&mut self) {
+        let maxentries = 256;
+        for rdin in self.rxchan.try_iter() {
+          //find widgets with .id = rdin.id then .push() rdin.dat
+          for widget in self.widgets.iter_mut() {
+            let cloneddat = rdin.dat.clone();
+            if widget.getid() == rdin.id {
+              widget.push(cloneddat);
+            }
+          }
+        }
+
     }
 
 }
@@ -166,10 +180,10 @@ pub fn main() {
     //    data: Vec::<state::RingDataBuffer>::new(),
     //};
 
-    let (txdata,mut rxdata): (Sender<state::RingData>, Receiver<state::RingData>) = mpsc::channel();
+    let (txdata,mut rxdata): (Sender<state::ChannelData>, Receiver<state::ChannelData>) = mpsc::channel();
     {
         let thread_tx = txdata.clone();
-        thread::spawn(move|| { data_acquisition::io_reader(thread_tx); });
+        thread::spawn(move|| { data_acquisition::io_reader(thread_tx, 0); });
     }
 
     let mut viztype = state::RingVizType::Hist;
@@ -190,7 +204,7 @@ pub fn main() {
         gl: GlGraphics::new(opengl),
         //irs: intRingState { sliding: false, targetTmMs:  }
         widgets: Vec::new(),
-           
+        rxchan: rxdata
     };
     let (x,y) = (window.size().width as f64, window.size().height as f64);
     let sz1 = x.min(y) as f64 / 2.0;
@@ -199,9 +213,9 @@ pub fn main() {
     //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
     //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
     //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
-    let hr1 = viz::HistoRing::new(0.0, 0.0, sz1);
-    let hr2 = viz::HistoRing::new(0.0, 0.0, sz2);
-    let hr3 = viz::HistoRing::new(0.0, 0.0, sz3);
+    let hr1 = viz::HistoRing::new(0.0, 0.0, sz1, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    let hr2 = viz::HistoRing::new(0.0, 0.0, sz2, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    let hr3 = viz::HistoRing::new(0.0, 0.0, sz3, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
     app.widgets.push(Box::new(hr1));
     app.widgets.push(Box::new(hr2));
     app.widgets.push(Box::new(hr3));
@@ -209,7 +223,8 @@ pub fn main() {
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         //handle_io_rx(&mut rxdata, &mut app.rdbints);
-        handle_io_rx(&mut rxdata, &mut rdbints);
+        //handle_io_rx(&mut rxdata, &mut rdbints);
+        app.receive();
         if let Some(r) = e.render_args() { app.render(&r); }
         if let Some(u) = e.update_args() { app.update(&u); }
     }
