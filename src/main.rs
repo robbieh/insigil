@@ -26,6 +26,8 @@ use std::collections::VecDeque;
 use std::cmp::{min,max};
 use std::slice::Split;
 
+use std::env;
+
 use time::Timespec;
 
 mod data_acquisition;
@@ -37,10 +39,10 @@ use widget::Widget;
 use graphics::*;
 
 pub struct App {
+    p: params,
     gl: GlGraphics,
     widgets: Vec<Box<Widget<GlGraphics>>>,
     rxchan: Receiver<state::ChannelData>
-    //irs: state::intRingState
 }
 
 
@@ -50,15 +52,9 @@ const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {
-
         let (x,y) = ((args.width as f64/2.0), (args.height as f64/2.0));
-        //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
-        //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
-        //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
-        //let rdbi = &mut self.rdbints;
-        //
         let widgets = & mut self.widgets;
-        
+
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
             let transform = c.transform.trans(110.0,530.0);
@@ -68,46 +64,24 @@ impl App {
             }
         });
     }
-
     fn update(&mut self, args: &UpdateArgs) {
     }
     fn receive(&mut self) {
         let maxentries = 256;
         for rdin in self.rxchan.try_iter() {
-          //find widgets with .id = rdin.id then .push() rdin.dat
-          for widget in self.widgets.iter_mut() {
-            let cloneddat = rdin.dat.clone();
-            if widget.getid() == rdin.id {
-              widget.push(cloneddat);
+            for widget in self.widgets.iter_mut() {
+                let cloneddat = rdin.dat.clone();
+                if widget.getid() == rdin.id {
+                    widget.push(cloneddat);
+                }
             }
-          }
         }
-
     }
-
 }
 
-// parse args
-//  data type
-//  viz type
-// start a thread
-// read stdin into appropriate buffer type
-
-// some sort of data structure describing state/config of viz
-// what data types? 
-// series of ints
-//   interpreted as ...
-//     histogram - 'ticks' of different heights ||||
-//     interval - space between ticks   | |   |  |    |  | |
-// dates
-// text
-//
-//
-
-
 pub fn handle_io_rx_old(rxdata: &mut Receiver<state::RingData>, 
-                    rdbints: &mut state::RingDataBuffer
-                    ) {
+                        rdbints: &mut state::RingDataBuffer
+                       ) {
     let maxints = 256;
     for rdin in rxdata.try_iter() {
         match rdin {
@@ -117,7 +91,7 @@ pub fn handle_io_rx_old(rxdata: &mut Receiver<state::RingData>,
                     &mut state::RingDataBuffer::Ints(ref mut intvec) => {
                         intvec.push_back(i);
                         if intvec.len() >= maxints 
-                            {let x = intvec.pop_front();}
+                        {let x = intvec.pop_front();}
                     },
                     _ => {}
                 }
@@ -148,36 +122,66 @@ pub fn handle_io_rx(rxdata: &mut Receiver<state::RingData>,
     }
 }
 
+#[derive(Debug)]
+pub struct file_and_opts {
+    file: String,
+    opts: String
+}
+
+#[derive(Debug)]
+pub struct params {
+    files: Vec<file_and_opts>,
+    //other settings
+}
+
+pub fn parse_args(mut args: std::env::Args) -> params {
+    let mut p = params {
+        files: Vec::<file_and_opts>::new(),
+    };
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "-f" => {
+                let f = args.next().unwrap();
+                let fao = file_and_opts { file: f, opts: "".to_string()};
+                p.files.push(fao);
+                //println!("file {:?}", f)
+            }
+            _ => {
+                println!("misc arg {:?}", arg)
+            }
+        }
+    };
+    p
+}
+
+
 pub fn main() {
-    //let textq: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
-    //let mut world = state::WorldState {
-    //    ioq: VecDeque::<state::Actions>::new(),
-    //    data: Vec::<state::RingDataBuffer>::new(),
-    //};
+    let p = parse_args(env::args());
+    println!("p {:?}", p);
+
 
     let (txdata,mut rxdata): (Sender<state::ChannelData>, Receiver<state::ChannelData>) = mpsc::channel();
     {
         let thread_tx = txdata.clone();
-        thread::spawn(move|| { data_acquisition::io_reader(thread_tx, 0); });
+        thread::spawn(move|| { data_acquisition::stdin_reader(thread_tx, 0); });
     }
-
+    {
+        let thread_tx = txdata.clone();
+        thread::spawn(move|| { data_acquisition::file_reader(thread_tx, 1, "numbers"); });
+    }
     let mut viztype = state::RingVizType::Hist;
-    //let mut rdbvec = Vec::<state::RingDataBuffer>::new();
-    //rdbvec.push(state::RingDataBuffer::new(state::RingDataBufferType::Ints));
-    //let mut rdbints = state::RingDataBuffer::new(state::RingDataBufferType::Ints);
     let mut rdbints = VecDeque::<i32>::new();
-
     let opengl = OpenGL::V3_2;
-    let mut window: GlutinWindow = WindowSettings::new("twirl", [640,640])
+    let mut window: GlutinWindow = 
+        WindowSettings::new("twirl", [640,640])
         .opengl(opengl)
         .samples(8)
         .exit_on_esc(true)
         .build()
         .unwrap();
-
     let mut app = App {
+        p: p,
         gl: GlGraphics::new(opengl),
-        //irs: intRingState { sliding: false, targetTmMs:  }
         widgets: Vec::new(),
         rxchan: rxdata
     };
@@ -185,20 +189,12 @@ pub fn main() {
     let sz1 = x.min(y) as f64 / 2.0;
     let sz2 = sz1 / 3.0 * 2.0;
     let sz3 = sz1 / 3.0;
-    //let ringBounds = rectangle::rectangle_by_corners(-x, -y, x , y );
-    //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
-    //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
     let hr1 = viz::HistoRing::new(0.0, 0.0, sz2, 50.0, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
-    let hr2 = viz::HistoRing::new(0.0, 0.0, sz3, 25.0, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
-    //let hr3 = viz::HistoRing::new(0.0, 0.0, sz3, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    let hr2 = viz::HistoRing::new(0.0, 0.0, sz3, 25.0, 1, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
     app.widgets.push(Box::new(hr1));
     app.widgets.push(Box::new(hr2));
-    //app.widgets.push(Box::new(hr3));
-
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
-        //handle_io_rx(&mut rxdata, &mut app.rdbints);
-        //handle_io_rx(&mut rxdata, &mut rdbints);
         app.receive();
         if let Some(r) = e.render_args() { app.render(&r); }
         if let Some(u) = e.update_args() { app.update(&u); }

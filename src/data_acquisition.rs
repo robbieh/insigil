@@ -1,12 +1,14 @@
 
 extern crate std;
-use std::io::{stdin, BufRead};
+use std::io::{stdin, BufRead, BufReader};
 use state;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
+use std::fs::File;
+use std::thread;
+use std::time;
 
-pub fn io_reader(txdata: Sender<state::ChannelData>,
-    //textq: Arc<Mutex<VecDeque<String>>>
+pub fn stdin_reader(txdata: Sender<state::ChannelData>,
     id: i32
     ) {
     let sin = std::io::stdin();
@@ -27,18 +29,30 @@ pub fn io_reader(txdata: Sender<state::ChannelData>,
                     println!("Expected an int, but got: {:?}", msg);
                 }
             }
-            //textq.lock().unwrap().push_back(line);
     }
-    //let msg = textq.lock().unwrap().pop_front();
-    //if msg.is_some() {
-    //    let msgstr: String = msg.unwrap();
-    //     println!("I GOT MSG {:?}", msgstr.clone());
-    //let mut iter = msgstr.split(' ');
-    //    let v: Vec<&str> = msgstr.split(' ').collect();
-    //iter.map(|num| println!("N: {:?}",num ));
-    //   for i in v {
-    //      println!("i: {:?}",i.clone()); 
-    //rdbvec.get(0). 
-    //    }
+}
 
+pub fn file_reader(txdata: Sender<state::ChannelData>,
+    id: i32,
+    filename: &str
+    ) {
+    let mut f = File::open(filename).unwrap();
+    let mut reader = BufReader::new(f);
+    let mut buffer = String::new();
+    loop {
+        buffer = String::new();
+        reader.read_line(&mut buffer);
+        thread::sleep(time::Duration::from_millis(10));
+        match buffer.trim().parse::<i32>() {
+            Ok(i) => {
+                println!("got: {:?}", i.clone());
+                let rdint = state::RingData::Int(i);
+                let cdat = state::ChannelData { id: id, dat: rdint };
+                txdata.send(cdat).unwrap();
+            },
+            Err(msg) => {
+                //println!("Expected an int, but got: {:?}", msg);
+            }
+        }
+    }
 }
