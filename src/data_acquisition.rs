@@ -34,7 +34,7 @@ pub fn stdin_reader(txdata: Sender<state::ChannelData>,
 
 pub fn file_reader(txdata: Sender<state::ChannelData>,
     id: i32,
-    filename: &str
+    filename: String
     ) {
     let mut f = File::open(filename).unwrap();
     let mut reader = BufReader::new(f);
@@ -42,10 +42,10 @@ pub fn file_reader(txdata: Sender<state::ChannelData>,
     loop {
         buffer = String::new();
         reader.read_line(&mut buffer);
-        thread::sleep(time::Duration::from_millis(10));
+        thread::sleep(time::Duration::from_millis(100));
         match buffer.trim().parse::<i32>() {
             Ok(i) => {
-                println!("got: {:?}", i.clone());
+                //println!("got: {:?}", i.clone());
                 let rdint = state::RingData::Int(i);
                 let cdat = state::ChannelData { id: id, dat: rdint };
                 txdata.send(cdat).unwrap();
