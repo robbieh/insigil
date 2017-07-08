@@ -189,10 +189,10 @@ pub fn main() {
     //let ringBounds1 = rectangle::rectangle_by_corners(-240.0,-240.0,240.0,240.0);
     //let ringBounds2 = rectangle::rectangle_by_corners(-160.0,-160.0,160.0,160.0);
     let hr1 = viz::HistoRing::new(0.0, 0.0, sz2, 50.0, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
-    //let hr2 = viz::HistoRing::new(0.0, 0.0, sz2, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+    let hr2 = viz::HistoRing::new(0.0, 0.0, sz3, 25.0, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
     //let hr3 = viz::HistoRing::new(0.0, 0.0, sz3, 0, state::RingDataBuffer::new(state::RingDataBufferType::Ints));
     app.widgets.push(Box::new(hr1));
-    //app.widgets.push(Box::new(hr2));
+    app.widgets.push(Box::new(hr2));
     //app.widgets.push(Box::new(hr3));
 
     let mut events = Events::new(EventSettings::new());
