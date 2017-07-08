@@ -51,7 +51,7 @@ const GREEN_10: [f32; 4] = [0.0, 1.0, 0.0, 0.1];
 const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
 const DEFAULT_WINDOW_SIZE: u32 = 640;
-const DEFAULT_RING_PCT: u32 = 10;
+const DEFAULT_RING_PCT: u32 = 20;
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {
@@ -126,8 +126,8 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
     let wsz = DEFAULT_WINDOW_SIZE;
     let mut wcount = 0;
     // a counter to whittle down with each new widget
-    let mut sz = wsz as f64;
-    let mut rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0);
+    let mut sz = wsz as f64 / 3.0; //fudge factor for hidpi bug
+    let mut rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.5;
 
     let mut app = App {
         p: p.clone(),
@@ -154,10 +154,10 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
             }
             let ring = 
                 viz::HistoRing::new
-                  (0.0, 0.0, sz, rwidth, 0, 
+                  (0.0, 0.0, sz, rwidth, wcount, 
                   state::RingDataBuffer::new(state::RingDataBufferType::Ints));
             app.widgets.push(Box::new(ring));
-            sz -= rwidth;
+            sz -= rwidth * 2.0;
             wcount += 1;
         }
     }

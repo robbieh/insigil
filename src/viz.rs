@@ -30,7 +30,12 @@ const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const GREEN_05: [f32; 4] = [0.0, 1.0, 0.0, 0.5];
 
 impl HistoRing {
-    pub fn new(x: f64, y: f64, size: f64, innerrad: f64, id: i32, dat: state::RingDataBuffer) -> HistoRing {
+    pub fn new(x: f64, y: f64, 
+               size: f64, innerrad: f64, 
+               id: i32, 
+               dat: state::RingDataBuffer) -> HistoRing {
+        println!("new historing size {:?} using data id {:?}",
+                 size.clone(), id.clone());
         HistoRing { 
             sliding: false,
             targetTmMs: time::now(),
@@ -73,14 +78,14 @@ where G: Graphics{
                     //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
                     (sum,max,avg)
                 };
-                let working = (radius - buffer - (radius - self.innerrad)) as f64;
+                let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
                 let scale = working / max as f64;
                 for (idx, i) in intsq.iter().enumerate() {
                     //println!("draw {:?} {:?}", idx, i.clone());
                     let t = transform.rot_rad(0.031415 * idx as f64);
                     let line = rectangle::rectangle_by_corners(
                         3.0, (1.0 * radius - buffer),
-                        -3.0, (1.0 * radius - buffer) - (i.clone() as f64 * scale)
+                        -3.0, (1.0 * radius - buffer) - (i.clone() as f64 * scale) - buffer
                         );
                     //println!("{:?}", line);
                     rectangle(GREEN_05, line, t, g);

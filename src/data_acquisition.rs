@@ -12,9 +12,10 @@ pub fn stdin_reader(txdata: Sender<state::ChannelData>,
     id: i32
     ) {
     let sin = std::io::stdin();
+    println!("starting stin_reader");
     for line in sin.lock().lines() {
             let line = line.unwrap();
-            println!("\nEntered: {:?}\n",line.clone());
+            //println!("\nEntered: {:?}\n",line.clone());
             match line.clone().as_ref()  {
                 "q" => ::std::process::exit(0),
                 _ => {}
@@ -36,9 +37,11 @@ pub fn file_reader(txdata: Sender<state::ChannelData>,
     id: i32,
     filename: String
     ) {
-    let mut f = File::open(filename).unwrap();
+    let mut f = File::open(filename.clone()).unwrap();
     let mut reader = BufReader::new(f);
     let mut buffer = String::new();
+    println!("starting file_reader on {:?} for id {:?}", 
+             filename.clone(), id.clone());
     loop {
         buffer = String::new();
         reader.read_line(&mut buffer);
