@@ -15,6 +15,8 @@ use time;
 use time::Tm;
 use widget::Widget;
 
+const MAX_ENTRIES: usize = 200;
+
 pub struct HistoRing {
     sliding: bool,
     targetTmMs: Tm,
@@ -57,7 +59,7 @@ where G: Graphics{
         //size: f64
         ) where G: Graphics {
         let radius = self.size * 0.5;
-        let buffer = 5.0;
+        let buffer = 2.0;
         let ref mut dat = self.dat;
 
         //calculate stuff
@@ -68,24 +70,25 @@ where G: Graphics{
              self.size / 2.0);
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
-        circle_arc(GREEN_05, 1.0, 0.0, 6.282, ringbounds, transform, g);
+        circle_arc(GREEN_05, 0.5, 0.0, 6.282, ringbounds, transform, g);
         match *dat {
             RingDataBuffer::Ints(ref intsq) => {
-                let (sum,max,avg) = {
+                let (sum,mx,avg) = {
                     let sum: i32 = intsq.iter().sum();
-                    let max = intsq.iter().fold(0,|largest, &i| max(i, largest));
+                    let mx = intsq.iter().fold(0,|largest, &i| max(i, largest));
                     let avg: f32 = sum as f32 / intsq.len() as f32;
                     //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
-                    (sum,max,avg)
+                    (sum,mx,avg)
                 };
                 let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
-                let scale = working / max as f64;
+                let scale = working / mx as f64;
                 for (idx, i) in intsq.iter().enumerate() {
                     //println!("draw {:?} {:?}", idx, i.clone());
                     let t = transform.rot_rad(0.031415 * idx as f64);
                     let line = rectangle::rectangle_by_corners(
                         3.0, (1.0 * radius - buffer),
-                        -3.0, (1.0 * radius - buffer) - (i.clone() as f64 * scale) - buffer
+                        -3.0, 
+                        ((1.0 * radius - buffer) - (i.clone() as f64 * scale - buffer)).min(1.0 * radius - buffer)
                         );
                     //println!("{:?}", line);
                     rectangle(GREEN_05, line, t, g);
@@ -113,6 +116,8 @@ where G: Graphics{
                     RingDataBuffer::Ints(ref mut intq) => 
                     { intq.push_front(i) ;
                         //println!("pushed: {:?}", i)
+                      if intq.len() > MAX_ENTRIES
+                          { let _ = intq.pop_back();}
                     },
                     _ => {}
                 }
