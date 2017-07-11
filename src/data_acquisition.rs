@@ -8,7 +8,11 @@ use std::fs::File;
 use std::thread;
 use std::time;
 
-fn read_line(line: String) -> state::RingData {
+fn read_line(line: String, t: state::RingDataBufferType) 
+    -> state::RingData {
+
+    match state::RingDataBufferType
+    
     state::RingData::IntVec(vec![5,10,100])
 }
 
