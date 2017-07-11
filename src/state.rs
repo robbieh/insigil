@@ -2,10 +2,10 @@ use std::collections::VecDeque;
 
 use std::sync::{Arc, Mutex};
 
-#[derive(Debug)]
-pub enum RingVizType {
-    Hist, Interval, Text
-}
+//#[derive(Debug)]
+//pub enum RingVizType {
+//    Hist, Interval, Text
+//}
 
 // need... a data structure to fill from the thread
 
@@ -13,7 +13,8 @@ pub enum RingVizType {
 pub enum RingData {
     Int(i32),
     Text(String),
-    Date((i32,i32))
+    Date((i32,i32)),
+    IntVec(Vec<i32>)
 }
 
 #[derive(Debug,Clone)]
@@ -26,11 +27,12 @@ pub struct ChannelData {
 pub enum RingDataBuffer {
     Ints(VecDeque<i32>),
     Text(VecDeque<char>),
-    DatedInts(VecDeque<(i32,i32)>)
+    DatedInts(VecDeque<(i32,i32)>),
+    IntVec(Vec<Vec<i32>>)
 }
 
 #[derive(Debug)]
-pub enum RingDataBufferType { Ints, Text, DatedInts }
+pub enum RingDataBufferType { Ints, Text, DatedInts,IntVec }
 
 impl RingDataBuffer {
     pub fn new(t: RingDataBufferType) -> RingDataBuffer {
@@ -40,7 +42,9 @@ impl RingDataBuffer {
             RingDataBufferType::Text => 
                 RingDataBuffer::Text(VecDeque::new()),
             RingDataBufferType::DatedInts => 
-                RingDataBuffer::DatedInts(VecDeque::new())
+                RingDataBuffer::DatedInts(VecDeque::new()),
+            RingDataBufferType::IntVec => 
+                RingDataBuffer::IntVec(Vec::new())
         }
     }
 }

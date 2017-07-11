@@ -8,6 +8,10 @@ use std::fs::File;
 use std::thread;
 use std::time;
 
+fn read_line(line: String) -> state::RingData {
+    state::RingData::Int(5)
+}
+
 pub fn stdin_reader(txdata: Sender<state::ChannelData>,
     id: i32
     ) {

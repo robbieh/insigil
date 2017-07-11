@@ -12,3 +12,4 @@ piston2d-opengl_graphics = "0.44.0"
 
 [profile.release]
 lto = true
+

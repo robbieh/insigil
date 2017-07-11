@@ -101,9 +101,15 @@ pub fn parse_args(mut args: std::env::Args) -> params {
     };
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "-f" => {
+            "-hr" => {
                 let f = args.next().unwrap();
-                let fao = file_and_opts { file: f, opts: "".to_string()};
+                let fao = file_and_opts { file: f, opts: "hr".to_string()};
+                p.files.push(fao);
+                //println!("file {:?}", f)
+            }
+            "-gr" => {
+                let f = args.next().unwrap();
+                let fao = file_and_opts { file: f, opts: "gr".to_string()};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
@@ -140,29 +146,40 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
     };
 
     for fao in p.files.iter() {
-        {
-            let thread_tx = txdata.clone();
-            let f = fao.file.clone();
-            if f == "-" {
-                thread::spawn(move|| 
-                  { data_acquisition::stdin_reader(thread_tx, 
-                                                   wcount); 
-                  });
-            } else {
-                thread::spawn(move|| 
-                  {data_acquisition::file_reader(thread_tx, 
-                                                 wcount, 
-                                                 f); 
-                  });
-            }
-            let ring = 
-                viz::HistoRing::new
-                  (0.0, 0.0, sz, rwidth, wcount, 
-                  state::RingDataBuffer::new(state::RingDataBufferType::Ints));
-            app.widgets.push(Box::new(ring));
-            sz -= rwidth * 2.0;
-            wcount += 1;
+        let thread_tx = txdata.clone();
+        let f = fao.file.clone();
+        let fo = fao.opts.clone();
+        if f == "-" {
+            thread::spawn(move|| 
+                          { data_acquisition::stdin_reader(thread_tx, 
+                                                           wcount); 
+                          });
+        } else {
+            thread::spawn(move|| 
+                          {data_acquisition::file_reader(thread_tx, 
+                                                         wcount, 
+                                                         f); 
+                          });
         }
+        match fo.as_str() {
+            "hr" => {
+                let ring = 
+                    viz::HistoRing::new
+                    (0.0, 0.0, sz, rwidth, wcount, 
+                     state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+                app.widgets.push(Box::new(ring));
+            },
+            "gr" => {
+                let ring = 
+                    viz::GaugesRing::new
+                    (0.0, 0.0, sz, rwidth, wcount, 
+                     state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+                app.widgets.push(Box::new(ring));
+            }
+            &_ => {}
+        }
+        sz =- rwidth * 2.0;
+        wcount += 1;
     }
     app
 }
@@ -174,10 +191,10 @@ pub fn main() {
         WindowSettings::new("twirl", 
                             [DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE])
         .opengl(opengl)
-        .samples(8)
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
+            .samples(8)
+            .exit_on_esc(true)
+            .build()
+            .unwrap();
     let mut app = setup(&window, opengl, &p);
 
     let mut events = Events::new(EventSettings::new());
