@@ -9,7 +9,7 @@ use std::thread;
 use std::time;
 
 fn read_line(line: String) -> state::RingData {
-    state::RingData::Int(5)
+    state::RingData::IntVec(vec![5,10,100])
 }
 
 pub fn stdin_reader(txdata: Sender<state::ChannelData>,

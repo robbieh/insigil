@@ -148,7 +148,7 @@ impl GaugesRing {
                size: f64, innerrad: f64, 
                id: i32, 
                dat: state::RingDataBuffer) -> HistoRing {
-        println!("new historing size {:?} using data id {:?}",
+        println!("new gaugesring size {:?} using data id {:?}",
                  size.clone(), id.clone());
         HistoRing { 
             sliding: false,

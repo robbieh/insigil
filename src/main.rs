@@ -133,7 +133,7 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
     let mut wcount = 0;
     // a counter to whittle down with each new widget
     let mut sz = wsz as f64 / 3.0; //fudge factor for hidpi bug
-    //let pct = p.files.len() as f64/ 10.0;
+    let pct = p.files.len() as f64/ 10.0;
     //println!("{:?} {:?}", pct, p.files.len());
     let mut rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
     //let mut rwidth = sz * (pct as f64 ) * 0.25;
@@ -178,7 +178,7 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
             }
             &_ => {}
         }
-        sz =- rwidth * 2.0;
+        sz -= rwidth * 2.0;
         wcount += 1;
     }
     app
