@@ -28,10 +28,10 @@ pub enum RingDataBuffer {
     Ints(VecDeque<i32>),
     Text(VecDeque<char>),
     DatedInts(VecDeque<(i32,i32)>),
-    IntVec(Vec<Vec<i32>>)
+    IntVec(VecDeque<Vec<i32>>)
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum RingDataBufferType { Ints, Text, DatedInts,IntVec }
 
 impl RingDataBuffer {
@@ -44,7 +44,7 @@ impl RingDataBuffer {
             RingDataBufferType::DatedInts => 
                 RingDataBuffer::DatedInts(VecDeque::new()),
             RingDataBufferType::IntVec => 
-                RingDataBuffer::IntVec(Vec::new())
+                RingDataBuffer::IntVec(VecDeque::new())
         }
     }
 }

@@ -60,8 +60,8 @@ impl App {
 
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BLACK,gl);
-            let transform = c.transform.trans(110.0,530.0);
-            //let transform = c.transform.trans(x,y);
+            //let transform = c.transform.trans(110.0,530.0);
+            let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
                 widget.draw(transform, gl);
             }
@@ -86,7 +86,8 @@ impl App {
 #[derive(Debug, Clone)]
 pub struct file_and_opts {
     file: String,
-    opts: String
+    opts: String,
+    vizType: state::RingDataBufferType
 }
 
 #[derive(Debug, Clone)]
@@ -103,13 +104,15 @@ pub fn parse_args(mut args: std::env::Args) -> params {
         match arg.as_str() {
             "-hr" => {
                 let f = args.next().unwrap();
-                let fao = file_and_opts { file: f, opts: "hr".to_string()};
+                let fao = file_and_opts { file: f, opts: "hr".to_string(),
+                                  vizType: state::RingDataBufferType::Ints};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-gr" => {
                 let f = args.next().unwrap();
-                let fao = file_and_opts { file: f, opts: "gr".to_string()};
+                let fao = file_and_opts { file: f, opts: "gr".to_string(),
+                                  vizType: state::RingDataBufferType::IntVec};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
@@ -132,7 +135,8 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
     let wsz = DEFAULT_WINDOW_SIZE;
     let mut wcount = 0;
     // a counter to whittle down with each new widget
-    let mut sz = wsz as f64 / 3.0; //fudge factor for hidpi bug
+    //let mut sz = wsz as f64 / 3.0; //fudge factor for hidpi bug
+    let mut sz = wsz as f64 / 1.0; 
     let pct = p.files.len() as f64/ 10.0;
     //println!("{:?} {:?}", pct, p.files.len());
     let mut rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
@@ -149,16 +153,19 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
         let thread_tx = txdata.clone();
         let f = fao.file.clone();
         let fo = fao.opts.clone();
+        let ft = fao.vizType.clone();
         if f == "-" {
             thread::spawn(move|| 
                           { data_acquisition::stdin_reader(thread_tx, 
-                                                           wcount); 
+                                                           wcount,
+                                                           ft); 
                           });
         } else {
             thread::spawn(move|| 
                           {data_acquisition::file_reader(thread_tx, 
                                                          wcount, 
-                                                         f); 
+                                                         f,
+                                                         ft); 
                           });
         }
         match fo.as_str() {
@@ -173,7 +180,7 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
                 let ring = 
                     viz::GaugesRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
-                     state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+                     state::RingDataBuffer::new(state::RingDataBufferType::IntVec));
                 app.widgets.push(Box::new(ring));
             }
             &_ => {}

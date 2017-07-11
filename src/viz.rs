@@ -95,13 +95,13 @@ where G: Graphics{
                 }
             },
             RingDataBuffer::Text(ref text) => {
-                println!("{:?}", text);
+                println!("hrtext{:?}", text);
             },
             RingDataBuffer::DatedInts(ref dis) => {
-                println!("{:?}", dis);
+                println!("hrdates{:?}", dis);
             },
             RingDataBuffer::IntVec(ref iv) => {
-                println!("{:?}", iv);
+                println!("hrintvec{:?}", iv);
             }
 
         }
@@ -127,7 +127,7 @@ where G: Graphics{
             },
             RingData::Text(s) => {},
             RingData::Date(d) => {},
-            RingData::IntVec(iv) => {},
+            RingData::IntVec(iv) => {println!("pushed hrintvec")},
         }
     }
 }
@@ -147,10 +147,10 @@ impl GaugesRing {
     pub fn new(x: f64, y: f64, 
                size: f64, innerrad: f64, 
                id: i32, 
-               dat: state::RingDataBuffer) -> HistoRing {
+               dat: state::RingDataBuffer) -> GaugesRing {
         println!("new gaugesring size {:?} using data id {:?}",
                  size.clone(), id.clone());
-        HistoRing { 
+        GaugesRing { 
             sliding: false,
             targetTmMs: time::now(),
             size: size,
@@ -175,45 +175,46 @@ where G: Graphics{
         let ref mut dat = self.dat;
 
         //calculate stuff
-
         let ringbounds=rectangle::centered_square
             (self.x,
              self.y,
              self.size / 2.0);
+
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
         circle_arc(GREEN_05, 0.5, 0.0, 6.282, ringbounds, transform, g);
         match *dat {
             RingDataBuffer::Ints(ref intsq) => {
-                let (sum,mx,avg) = {
-                    let sum: i32 = intsq.iter().sum();
-                    let mx = intsq.iter().fold(0,|largest, &i| max(i, largest));
-                    let avg: f32 = sum as f32 / intsq.len() as f32;
-                    //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
-                    (sum,mx,avg)
-                };
-                let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
-                let scale = working / mx as f64;
-                for (idx, i) in intsq.iter().enumerate() {
-                    //println!("draw {:?} {:?}", idx, i.clone());
-                    let t = transform.rot_rad(0.031415 * idx as f64);
-                    let line = rectangle::rectangle_by_corners(
-                        3.0, (1.0 * radius - buffer),
-                        -3.0, 
-                        ((1.0 * radius - buffer) - (i.clone() as f64 * scale - buffer)).min(1.0 * radius - buffer)
-                        );
-                    //println!("{:?}", line);
-                    rectangle(GREEN_05, line, t, g);
-                }
             },
             RingDataBuffer::Text(ref text) => {
-                println!("{:?}", text);
+                println!("grtext{:?}", text);
             },
             RingDataBuffer::DatedInts(ref dis) => {
-                println!("{:?}", dis);
+                println!("grdates{:?}", dis);
             },
             RingDataBuffer::IntVec(ref iv) => {
-                println!("{:?}", iv);
+                //println!("griv {:?}", iv);
+                let working = (radius - buffer - 
+                               (radius - self.innerrad + buffer )) as f64;
+                let ringbounds=rectangle::centered_square
+                    (self.x,
+                     self.y,
+                     self.size / 2.0 - self.innerrad / 2.0);
+                //let scale = working / mx as f64;
+                if let Some(v) = iv.front() {
+                    let count = v.len() as f64;
+                    let arcsize_max_half = 6.282 / count / 2.0;
+                    //println!("arc {:?}", arcsize_max_half) ;
+                    for (idx,i) in v.iter().enumerate() {
+                        //println!("iterating {:?} {:?}", idx, i) ;
+                        let arc_rot = arcsize_max_half * 2.0 * idx as f64;
+                        let t = transform.rot_rad(arc_rot);
+                        let sz = arcsize_max_half * 0.01 * *i as f64; 
+                        circle_arc(GREEN_05, working * 0.5 - buffer, 
+                                   - sz, sz,
+                                   ringbounds, t, g);
+                        }
+                }
             }
         }
     }
@@ -223,20 +224,20 @@ where G: Graphics{
         rdata: state::RingData
         ) {
         match rdata {
-            RingData::Int(i) => { 
+            RingData::Int(i) => {}, 
+            RingData::Text(s) => {},
+            RingData::Date(d) => {},
+            RingData::IntVec(iv) => {
                 match self.dat {
-                    RingDataBuffer::Ints(ref mut intq) => 
-                    { intq.push_front(i) ;
-                        //println!("pushed: {:?}", i)
-                      if intq.len() > MAX_ENTRIES
-                          { let _ = intq.pop_back();}
+                    RingDataBuffer::IntVec(ref mut intvecq) => 
+                    { intvecq.push_front(iv.clone()) ;
+                        //println!("pushed: {:?}", iv);
+                      if intvecq.len() > 3
+                          { let _ = intvecq.pop_back();}
                     },
                     _ => {}
                 }
             },
-            RingData::Text(s) => {},
-            RingData::Date(d) => {},
-            RingData::IntVec(iv) => {},
         }
     }
 }
