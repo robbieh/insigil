@@ -1,13 +1,14 @@
 extern crate time;
 extern crate piston;
 extern crate graphics;
-extern crate glutin_window;
+//extern crate glutin_window;
+extern crate piston_window;
 extern crate opengl_graphics;
 
 use piston::window::WindowSettings;
 use piston::event_loop::*;
 use piston::input::*;
-use glutin_window::GlutinWindow;
+use piston_window::PistonWindow;
 use piston::window::Window;
 use opengl_graphics::{ GlGraphics, OpenGL }; 
 
@@ -126,7 +127,7 @@ pub fn parse_args(mut args: std::env::Args) -> params {
 
 /// This will spwan threads paired with widgets, and create
 /// the App struct with widget vec and receiver channel
-pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> App {
+pub fn setup(window: & Window, opengl: piston_window::OpenGL, p: & params) -> App {
     println!("params\n=====\n{:?}", p);
 
     let (txdata,mut rxdata): (Sender<state::ChannelData>, Receiver<state::ChannelData>) = mpsc::channel();
@@ -194,14 +195,15 @@ pub fn setup(window: & Window, opengl: glutin_window::OpenGL, p: & params) -> Ap
 pub fn main() {
     let p = parse_args(env::args());
     let opengl = OpenGL::V3_2;
-    let mut window: GlutinWindow = 
+    let mut window: PistonWindow = 
         WindowSettings::new("twirl", 
                             [DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE])
-        .opengl(opengl)
+            .opengl(opengl)
             .samples(8)
             .exit_on_esc(true)
             .build()
             .unwrap();
+    let factory = window.factory.clone();
     let mut app = setup(&window, opengl, &p);
 
     let mut events = Events::new(EventSettings::new());
