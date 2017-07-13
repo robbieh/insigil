@@ -8,7 +8,8 @@ extern crate find_folder;
 
 use piston::event_loop::*;
 use piston::input::*;
-use piston_window::{PistonWindow, Glyphs, G2dTexture};
+use piston_window::{PistonWindow, G2dTexture};
+use opengl_graphics::glyph_cache::GlyphCache;
 use piston::window::{AdvancedWindow, Window, WindowSettings};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
 use graphics::{Context, Graphics, Transformed};
@@ -42,9 +43,9 @@ use widget::Widget;
 pub struct App {
     p: params,
     gl: GlGraphics,
-    widgets: Vec<Box<Widget<GlGraphics>>>,
+    widgets: Vec<Box<Widget>>,
     rxchan: Receiver<state::ChannelData>,
-    glyphs: Glyphs
+    glyphs: GlyphCache<'static>,
 }
 
 const FONT: &str = "font/Hack-Regular.ttf";
@@ -60,13 +61,14 @@ impl App {
     fn render(&mut self, args: &RenderArgs) {
         let (x,y) = ((args.width as f64/2.0), (args.height as f64/2.0));
         let widgets = & mut self.widgets;
+        let glyphs = &mut self.glyphs;
 
         self.gl.draw(args.viewport(), |c, g| {
-            graphics::clear(BLACK,g);
+            piston_window::clear(BLACK,g);
             //let transform = c.transform.trans(110.0,530.0);
             let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
-                widget.draw(self.glyphs, &c, transform, g);
+                widget.draw(glyphs, &c, transform, g);
             }
         });
     }
@@ -119,6 +121,13 @@ pub fn parse_args(mut args: std::env::Args) -> params {
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
+            "-tr" => {
+                let f = args.next().unwrap();
+                let fao = file_and_opts { file: f, opts: "tr".to_string(),
+                                  vizType: state::RingDataBufferType::Text};
+                p.files.push(fao);
+                //println!("file {:?}", f)
+            }
             _ => {
                 println!("misc arg {:?}", arg)
             }
@@ -145,10 +154,9 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params)
     let mut rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
     //let mut rwidth = sz * (pct as f64 ) * 0.25;
 
-    let factory = window.factory.clone();
     let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
     let ref font = assets.join(FONT);
-    let mut glyphs = Glyphs::new(font, factory).unwrap();
+    let mut glyphs = GlyphCache::new(font).unwrap();
 
     let mut app = App {
         p: p.clone(),
@@ -211,8 +219,9 @@ pub fn main() {
     let p = parse_args(env::args());
     let opengl = OpenGL::V3_2;
     let mut window: PistonWindow = 
-        WindowSettings::new("insigil", 
-                            [DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE])
+        WindowSettings::new(
+            "insigil", 
+             [DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE])
             .opengl(opengl)
             .samples(8)
             .exit_on_esc(true)
@@ -220,8 +229,8 @@ pub fn main() {
             .unwrap();
     let mut app = setup(&window, opengl, &p);
 
-    let mut events = Events::new(EventSettings::new());
-    while let Some(e) = events.next(&mut window) {
+    //let mut events = Events::new(EventSettings::new());
+    while let Some(e) = window.next() {
         app.receive();
         if let Some(r) = e.render_args() { app.render(&r); }
         if let Some(u) = e.update_args() { app.update(&u); }

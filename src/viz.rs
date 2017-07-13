@@ -2,20 +2,23 @@
 extern crate piston;
 extern crate graphics;
 extern crate opengl_graphics;
-
+//extern crate unicode_segmentation;
 use std::collections::VecDeque;
 
 use state;
 use state::{RingDataBuffer, RingDataBufferType, RingData};
 use std::cmp::{min,max};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
-use piston_window::{Glyphs,G2dTexture};
+use opengl_graphics::glyph_cache::GlyphCache;
+use piston_window::{self,Context,Transformed,G2dTexture};
 //use graphics::{Context, Graphics, Transformed, math};
 use graphics::*;
 
 use time;
 use time::Tm;
 use widget::Widget;
+
+//use unicode_segmentation::UnicodeSegmentation;
 
 const MAX_ENTRIES: usize = 200;
 
@@ -51,16 +54,15 @@ impl HistoRing {
     }
 }
 
-impl<G> Widget<G> for HistoRing
-where G: graphics::Graphics
+impl Widget for HistoRing
 {
     fn draw(
         &mut self,
         //ringbounds: [f64; 4],
-        glyphs: Glyphs,
+        glyphs: &mut GlyphCache,
         c: &Context,
         transform: math::Matrix2d,
-        g: &mut G,
+        g: &mut GlGraphics,
         //size: f64
         ) {
         let radius = self.size * 0.5;
@@ -166,16 +168,15 @@ impl GaugesRing {
     }
 }
 
-impl<G> Widget<G> for GaugesRing
-where G: graphics::Graphics
+impl Widget for GaugesRing
 {
     fn draw(
         &mut self,
         //ringbounds: [f64; 4],
-        glyphs: Glyphs,
+        glyphs: &mut GlyphCache,
         c: &Context,
         transform: math::Matrix2d,
-        g: &mut G,
+        g: &mut GlGraphics,
         //size: f64
         ) {
         let radius = self.size * 0.5;
@@ -279,16 +280,15 @@ impl TextRing {
     }
 }
 
-impl<G> Widget<G> for TextRing
-where G: graphics::Graphics
+impl Widget for TextRing
 {
     fn draw(
         &mut self,
         //ringbounds: [f64; 4],
-        glyphs: Glyphs,
+        glyphs: &mut GlyphCache,
         c: &Context,
         transform: math::Matrix2d,
-        g: &mut G,
+        g: &mut GlGraphics,
         //size: f64
         ) {
         let radius = self.size * 0.5;
@@ -309,10 +309,14 @@ where G: graphics::Graphics
                 println!("trints{:?}", intsq);
             },
             RingDataBuffer::Text(ref text) => {
-                println!("trtext{:?}", text);
-                let t = transform.rot_rad(3.0).trans(0.0,radius - buffer);
-                let mut txt = text::Text::new_color([0.0,1.0,0.0,0.5], 32);
-                txt.draw("x", &mut glyphs,& c.draw_state, t, g);
+                //for (idx,c) in UnicodeSegmentation::graphemes(text,true)
+                //    .iter().enumerate() 
+                for (idx,c) in text.iter().enumerate() 
+                    {
+                let t = transform.rot_rad(0.0314 * idx as f64).trans(0.0,radius - buffer);
+                piston_window::text([0.0,1.0,0.0,0.5], 20, 
+                                    &c.to_string(), glyphs, t, g);
+                }
             },
             RingDataBuffer::DatedInts(ref dis) => {
                 println!("trdates{:?}", dis);
@@ -329,19 +333,22 @@ where G: graphics::Graphics
         ) {
         match rdata {
             RingData::Int(i) => {}, 
-            RingData::Text(s) => {},
-            RingData::Date(d) => {},
-            RingData::IntVec(iv) => {
+            RingData::Text(s) => {
                 match self.dat {
-                    RingDataBuffer::IntVec(ref mut intvecq) => 
-                    { intvecq.push_front(iv.clone()) ;
-                        //println!("pushed: {:?}", iv);
-                      if intvecq.len() > 3
-                          { let _ = intvecq.pop_back();}
-                    },
+                    RingDataBuffer::Text(ref mut txtq) =>
+                    {
+                        //println!("{:?}",txtq);
+                        for c in s.chars() {
+                            txtq.push_front(c);
+                        };
+                        //println!("{:?}",txtq.len());
+                        while txtq.len() > 210 { let _ = txtq.pop_back(); }
+                    }
                     _ => {}
                 }
             },
+            RingData::Date(d) => {},
+            RingData::IntVec(iv) => {},
         }
     }
 }

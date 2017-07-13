@@ -20,7 +20,9 @@ fn parse_line(line: &str, t: & state::RingDataBufferType) -> Option<state::RingD
 
             }
         },
-        state::RingDataBufferType::Text => {None},
+        state::RingDataBufferType::Text => {
+            Some(state::RingData::Text(String::from(line)))
+        },
         state::RingDataBufferType::DatedInts => {None},
         state::RingDataBufferType::IntVec => {
             match line.split(' ').map(|v| v.parse::<i32>()).collect() {
