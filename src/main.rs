@@ -42,7 +42,7 @@ use widget::Widget;
 pub struct App {
     p: params,
     gl: GlGraphics,
-    widgets: Vec<Box<Widget<>>>,
+    widgets: Vec<Box<Widget<GlGraphics>>>,
     rxchan: Receiver<state::ChannelData>,
     glyphs: Glyphs
 }

@@ -51,7 +51,8 @@ impl HistoRing {
     }
 }
 
-impl Widget for HistoRing
+impl<G> Widget<G> for HistoRing
+where G: graphics::Graphics
 {
     fn draw(
         &mut self,
@@ -59,7 +60,7 @@ impl Widget for HistoRing
         glyphs: Glyphs,
         c: &Context,
         transform: math::Matrix2d,
-        g: Self::G,
+        g: &mut G,
         //size: f64
         ) {
         let radius = self.size * 0.5;
@@ -165,7 +166,8 @@ impl GaugesRing {
     }
 }
 
-impl Widget for GaugesRing
+impl<G> Widget<G> for GaugesRing
+where G: graphics::Graphics
 {
     fn draw(
         &mut self,
@@ -173,7 +175,7 @@ impl Widget for GaugesRing
         glyphs: Glyphs,
         c: &Context,
         transform: math::Matrix2d,
-        g: Self::G,
+        g: &mut G,
         //size: f64
         ) {
         let radius = self.size * 0.5;
@@ -277,7 +279,8 @@ impl TextRing {
     }
 }
 
-impl Widget for TextRing
+impl<G> Widget<G> for TextRing
+where G: graphics::Graphics
 {
     fn draw(
         &mut self,
@@ -285,7 +288,7 @@ impl Widget for TextRing
         glyphs: Glyphs,
         c: &Context,
         transform: math::Matrix2d,
-        g: Self::G,
+        g: &mut G,
         //size: f64
         ) {
         let radius = self.size * 0.5;
