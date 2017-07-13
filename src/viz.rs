@@ -9,6 +9,8 @@ use state;
 use state::{RingDataBuffer, RingDataBufferType, RingData};
 use std::cmp::{min,max};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
+use piston_window::{Glyphs,G2dTexture};
+//use graphics::{Context, Graphics, Transformed, math};
 use graphics::*;
 
 use time;
@@ -49,15 +51,17 @@ impl HistoRing {
     }
 }
 
-impl<G> Widget<G> for HistoRing
-where G: Graphics{
+impl Widget for HistoRing
+{
     fn draw(
         &mut self,
         //ringbounds: [f64; 4],
+        glyphs: Glyphs,
+        c: &Context,
         transform: math::Matrix2d,
-        g: &mut G,
+        g: Self::G,
         //size: f64
-        ) where G: Graphics {
+        ) {
         let radius = self.size * 0.5;
         let buffer = 2.0;
         let ref mut dat = self.dat;
@@ -161,15 +165,17 @@ impl GaugesRing {
     }
 }
 
-impl<G> Widget<G> for GaugesRing
-where G: Graphics{
+impl Widget for GaugesRing
+{
     fn draw(
         &mut self,
         //ringbounds: [f64; 4],
+        glyphs: Glyphs,
+        c: &Context,
         transform: math::Matrix2d,
-        g: &mut G,
+        g: Self::G,
         //size: f64
-        ) where G: Graphics {
+        ) {
         let radius = self.size * 0.5;
         let buffer = 2.0;
         let ref mut dat = self.dat;
@@ -215,6 +221,101 @@ where G: Graphics{
                                    ringbounds, t, g);
                         }
                 }
+            }
+        }
+    }
+    fn getid(&mut self) -> i32 { self.id }
+    fn push (
+        &mut self,
+        rdata: state::RingData
+        ) {
+        match rdata {
+            RingData::Int(i) => {}, 
+            RingData::Text(s) => {},
+            RingData::Date(d) => {},
+            RingData::IntVec(iv) => {
+                match self.dat {
+                    RingDataBuffer::IntVec(ref mut intvecq) => 
+                    { intvecq.push_front(iv.clone()) ;
+                        //println!("pushed: {:?}", iv);
+                      if intvecq.len() > 3
+                          { let _ = intvecq.pop_back();}
+                    },
+                    _ => {}
+                }
+            },
+        }
+    }
+}
+
+pub struct TextRing {
+    sliding: bool,
+    targetTmMs: Tm,
+    size: f64,
+    innerrad: f64,
+    x: f64,
+    y: f64,
+    id: i32,
+    dat: RingDataBuffer
+}
+
+impl TextRing {
+    pub fn new(x: f64, y: f64, 
+               size: f64, innerrad: f64, 
+               id: i32, 
+               dat: state::RingDataBuffer) -> TextRing {
+        println!("new gaugesring size {:?} using data id {:?}",
+                 size.clone(), id.clone());
+        TextRing { 
+            sliding: false,
+            targetTmMs: time::now(),
+            size: size,
+            innerrad: innerrad,
+            x: x, y: y,
+            id: id, dat: dat
+        }
+    }
+}
+
+impl Widget for TextRing
+{
+    fn draw(
+        &mut self,
+        //ringbounds: [f64; 4],
+        glyphs: Glyphs,
+        c: &Context,
+        transform: math::Matrix2d,
+        g: Self::G,
+        //size: f64
+        ) {
+        let radius = self.size * 0.5;
+        let buffer = 2.0;
+        let ref mut dat = self.dat;
+
+        //calculate stuff
+        let ringbounds=rectangle::centered_square
+            (self.x,
+             self.y,
+             self.size / 2.0);
+
+        //draw stuff
+        //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
+        circle_arc(GREEN_05, 0.5, 0.0, 6.282, ringbounds, transform, g);
+        match *dat {
+            RingDataBuffer::Ints(ref intsq) => {
+                println!("trints{:?}", intsq);
+            },
+            RingDataBuffer::Text(ref text) => {
+                println!("trtext{:?}", text);
+                let t = transform.rot_rad(3.0).trans(0.0,radius - buffer);
+                let mut txt = text::Text::new_color([0.0,1.0,0.0,0.5], 32);
+                txt.draw("x", &mut glyphs,& c.draw_state, t, g);
+            },
+            RingDataBuffer::DatedInts(ref dis) => {
+                println!("trdates{:?}", dis);
+            },
+            RingDataBuffer::IntVec(ref iv) => {
+                println!("trdates{:?}", iv);
             }
         }
     }

@@ -7,10 +7,29 @@ authors = ["Robbie Huffman <robbie.huffman@gmail.com>"]
 time = "*"
 piston = "0.32.0"
 piston2d-graphics = "0.21.1"
-pistoncore-glutin_window = "0.37.0"
 piston_window = "*"
+find_folder = "*"
 piston2d-opengl_graphics = "0.44.0"
 
 [profile.release]
 lto = true
+
+[dependencies.pistoncore-sdl2_window]
+version = "0.43.0"
+optional = true
+
+[dependencies.pistoncore-glfw_window]
+version = "0.34.0"
+optional = true
+
+[dependencies.pistoncore-glutin_window]
+version = "0.37.0"
+optional = true
+
+
+[features]
+default = ["include_glutin"]
+include_sdl2 = ["pistoncore-sdl2_window"]
+include_glfw = ["pistoncore-glfw_window"]
+include_glutin = ["pistoncore-glutin_window"]
 

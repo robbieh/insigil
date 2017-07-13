@@ -4,13 +4,14 @@ extern crate graphics;
 //extern crate glutin_window;
 extern crate piston_window;
 extern crate opengl_graphics;
+extern crate find_folder;
 
-use piston::window::WindowSettings;
 use piston::event_loop::*;
 use piston::input::*;
-use piston_window::PistonWindow;
-use piston::window::Window;
+use piston_window::{PistonWindow, Glyphs, G2dTexture};
+use piston::window::{AdvancedWindow, Window, WindowSettings};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
+use graphics::{Context, Graphics, Transformed};
 
 use std::time::Duration;
 
@@ -37,15 +38,16 @@ mod viz;
 mod widget;
 
 use widget::Widget;
-use graphics::*;
 
 pub struct App {
     p: params,
     gl: GlGraphics,
-    widgets: Vec<Box<Widget<GlGraphics>>>,
-    rxchan: Receiver<state::ChannelData>
+    widgets: Vec<Box<Widget<>>>,
+    rxchan: Receiver<state::ChannelData>,
+    glyphs: Glyphs
 }
 
+const FONT: &str = "font/Hack-Regular.ttf";
 
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const GREEN_10: [f32; 4] = [0.0, 1.0, 0.0, 0.1];
@@ -59,12 +61,12 @@ impl App {
         let (x,y) = ((args.width as f64/2.0), (args.height as f64/2.0));
         let widgets = & mut self.widgets;
 
-        self.gl.draw(args.viewport(), |c, gl| {
-            clear(BLACK,gl);
+        self.gl.draw(args.viewport(), |c, g| {
+            graphics::clear(BLACK,g);
             //let transform = c.transform.trans(110.0,530.0);
             let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
-                widget.draw(transform, gl);
+                widget.draw(self.glyphs, &c, transform, g);
             }
         });
     }
@@ -127,7 +129,7 @@ pub fn parse_args(mut args: std::env::Args) -> params {
 
 /// This will spwan threads paired with widgets, and create
 /// the App struct with widget vec and receiver channel
-pub fn setup(window: & Window, opengl: piston_window::OpenGL, p: & params) -> App {
+pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params) -> App {
     println!("params\n=====\n{:?}", p);
 
     let (txdata,mut rxdata): (Sender<state::ChannelData>, Receiver<state::ChannelData>) = mpsc::channel();
@@ -143,11 +145,17 @@ pub fn setup(window: & Window, opengl: piston_window::OpenGL, p: & params) -> Ap
     let mut rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
     //let mut rwidth = sz * (pct as f64 ) * 0.25;
 
+    let factory = window.factory.clone();
+    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
+    let ref font = assets.join(FONT);
+    let mut glyphs = Glyphs::new(font, factory).unwrap();
+
     let mut app = App {
         p: p.clone(),
         gl: GlGraphics::new(opengl),
         widgets: Vec::new(),
-        rxchan: rxdata
+        rxchan: rxdata,
+        glyphs: glyphs
     };
 
     for fao in p.files.iter() {
@@ -184,6 +192,13 @@ pub fn setup(window: & Window, opengl: piston_window::OpenGL, p: & params) -> Ap
                      state::RingDataBuffer::new(state::RingDataBufferType::IntVec));
                 app.widgets.push(Box::new(ring));
             }
+            "tr" => {
+                let ring = 
+                    viz::TextRing::new
+                    (0.0, 0.0, sz, rwidth, wcount, 
+                     state::RingDataBuffer::new(state::RingDataBufferType::Text));
+                app.widgets.push(Box::new(ring));
+            }
             &_ => {}
         }
         sz -= rwidth * 2.0;
@@ -196,14 +211,13 @@ pub fn main() {
     let p = parse_args(env::args());
     let opengl = OpenGL::V3_2;
     let mut window: PistonWindow = 
-        WindowSettings::new("twirl", 
+        WindowSettings::new("insigil", 
                             [DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE])
             .opengl(opengl)
             .samples(8)
             .exit_on_esc(true)
             .build()
             .unwrap();
-    let factory = window.factory.clone();
     let mut app = setup(&window, opengl, &p);
 
     let mut events = Events::new(EventSettings::new());
