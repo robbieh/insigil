@@ -11,6 +11,7 @@ use std::cmp::{min,max};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
 use opengl_graphics::glyph_cache::GlyphCache;
 use piston_window::{self,Context,Transformed,G2dTexture};
+use graphics::character::CharacterCache;
 //use graphics::{Context, Graphics, Transformed, math};
 use graphics::*;
 
@@ -295,6 +296,8 @@ impl Widget for TextRing
         let buffer = 2.0;
         let ref mut dat = self.dat;
 
+        let fontsize = (radius - buffer * 2.0) as u32;
+
         //calculate stuff
         let ringbounds=rectangle::centered_square
             (self.x,
@@ -304,6 +307,7 @@ impl Widget for TextRing
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
         circle_arc(GREEN_05, 0.5, 0.0, 6.282, ringbounds, transform, g);
+        let mut cursor = 0.0;
         match *dat {
             RingDataBuffer::Ints(ref intsq) => {
                 println!("trints{:?}", intsq);
@@ -313,7 +317,16 @@ impl Widget for TextRing
                 //    .iter().enumerate() 
                 for (idx,c) in text.iter().enumerate() 
                     {
-                let t = transform.rot_rad(0.0314 * idx as f64).trans(0.0,radius - buffer);
+
+                //note ... arc length = theta * radius (when theta is in radians)
+                //thus arc length / radius = theta
+                let arc_length = glyphs.character(fontsize, *c).width();
+                let theta = arc_length / radius;
+
+                //let t = transform.rot_rad(0.0314 * idx as f64).trans(0.0,radius - buffer);
+                let t = transform.rot_rad(cursor).trans(0.0,radius - buffer);
+                cursor = cursor + theta;
+
                 piston_window::text([0.0,1.0,0.0,0.5], 20, 
                                     &c.to_string(), glyphs, t, g);
                 }
