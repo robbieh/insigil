@@ -58,4 +58,9 @@ pub enum Actions {
     plus
 }
 
+pub struct Palette {
+    background:
+    primary:
+    secondary:
 
+}
