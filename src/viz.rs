@@ -296,7 +296,7 @@ impl Widget for TextRing
         let buffer = 2.0;
         let ref mut dat = self.dat;
 
-        let fontsize = (radius - buffer * 2.0) as u32;
+        let fontsize = (0.1 * (radius - buffer * 2.0)) as u32; //wild wild guess on 0.1* to scale it down...need to look at device dpi or something? hrm.
 
         //calculate stuff
         let ringbounds=rectangle::centered_square
@@ -322,12 +322,13 @@ impl Widget for TextRing
                 //thus arc length / radius = theta
                 let arc_length = glyphs.character(fontsize, *c).width();
                 let theta = arc_length / radius;
+                //println!("{:?} {:?} {:?} {:?}", c, arc_length, theta, cursor);
 
                 //let t = transform.rot_rad(0.0314 * idx as f64).trans(0.0,radius - buffer);
                 let t = transform.rot_rad(cursor).trans(0.0,radius - buffer);
                 cursor = cursor + theta;
 
-                piston_window::text([0.0,1.0,0.0,0.5], 20, 
+                piston_window::text([0.0,1.0,0.0,0.5], fontsize, 
                                     &c.to_string(), glyphs, t, g);
                 }
             },
