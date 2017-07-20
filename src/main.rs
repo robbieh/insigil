@@ -36,6 +36,7 @@ mod data_acquisition;
 mod state;
 mod viz;
 mod widget;
+mod config;
 
 use widget::Widget;
 
@@ -45,6 +46,7 @@ pub struct App {
     widgets: Vec<Box<Widget>>,
     rxchan: Receiver<state::ChannelData>,
     glyphs: GlyphCache<'static>,
+    palette: Palette
 }
 
 const FONT: &str = "font/Hack-Regular.ttf";
@@ -157,12 +159,15 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params)
     let ref font = assets.join(FONT);
     let mut glyphs = GlyphCache::new(font).unwrap();
 
+    let palette = 
+
     let mut app = App {
         p: p.clone(),
         gl: GlGraphics::new(opengl),
         widgets: Vec::new(),
         rxchan: rxdata,
-        glyphs: glyphs
+        glyphs: glyphs,
+        palette: palette
     };
 
     for fao in p.files.iter() {

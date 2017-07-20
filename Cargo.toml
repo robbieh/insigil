@@ -11,6 +11,7 @@ piston_window = "*"
 find_folder = "*"
 piston2d-opengl_graphics = "0.44.0"
 unicode-segmentation = "1.2.0"
+toml = "0.4"
 
 [profile.release]
 lto = true

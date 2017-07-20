@@ -59,8 +59,8 @@ pub enum Actions {
 }
 
 pub struct Palette {
-    background:
-    primary:
-    secondary:
-
+    background: [f32, f32, f32, f32]
+    primary: [f32, f32, f32, f32]
+    secondary: [f32, f32, f32, f32]
+    highlight: [f32, f32, f32, f32]
 }
