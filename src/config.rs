@@ -10,6 +10,14 @@ pub struct Config {
     palette: Option<state::Palette>
 }
 
+const default_palette: state::Palette = state::Palette{
+            background: [0.22, 0.16, 0.29, 1.0],
+               primary: [0.01, 0.58, 0.31, 0.8],
+             secondary: [0.15, 0.90, 0.15, 0.8],
+             highlight: [0.79, 0.41, 0.83, 1.0],
+            };
+
+
 pub fn parse_palette_file(path: &str) -> Config {
     let mut toml_string = String::new();
 
@@ -17,7 +25,7 @@ pub fn parse_palette_file(path: &str) -> Config {
         Ok(file) => file,
         Err(_) => {
             println!("Error trying to open file {:?}", path);
-            return Config{ palette: None };
+            return Config{ palette: Some(default_palette) };
         }
     };
 
@@ -36,12 +44,7 @@ pub fn parse_palette_file(path: &str) -> Config {
 pub fn read_palette() -> state::Palette {
 
     match env::home_dir() {
-        None => state::Palette {
-            background: [0.22, 0.16, 0.29, 1.0],
-               primary: [0.01, 0.58, 0.31, 0.8],
-             secondary: [0.18, 0.70, 0.05, 0.8],
-             highlight: [0.79, 0.41, 0.83, 1.0],
-            },
+        None => default_palette,
         Some(path) => {
             parse_palette_file(
                 path.join(".insigil.colors.toml").to_str().unwrap())
