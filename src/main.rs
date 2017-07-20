@@ -4,6 +4,10 @@ extern crate graphics;
 extern crate piston_window;
 extern crate opengl_graphics;
 extern crate find_folder;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate toml;
 
 use piston::event_loop::*;
 use piston::input::*;
@@ -46,7 +50,7 @@ pub struct App {
     widgets: Vec<Box<Widget>>,
     rxchan: Receiver<state::ChannelData>,
     glyphs: GlyphCache<'static>,
-    palette: Palette
+    palette: state::Palette
 }
 
 const FONT: &str = "font/Hack-Regular.ttf";
@@ -63,9 +67,10 @@ impl App {
         let (x,y) = ((args.width as f64/2.0), (args.height as f64/2.0));
         let widgets = & mut self.widgets;
         let glyphs = &mut self.glyphs;
+        let bg = self.palette.background;
 
         self.gl.draw(args.viewport(), |c, g| {
-            piston_window::clear(BLACK,g);
+            piston_window::clear(bg,g);
             //let transform = c.transform.trans(110.0,530.0);
             let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
@@ -159,7 +164,7 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params)
     let ref font = assets.join(FONT);
     let mut glyphs = GlyphCache::new(font).unwrap();
 
-    let palette = 
+    let palette = config::read_palette();
 
     let mut app = App {
         p: p.clone(),
@@ -167,7 +172,7 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params)
         widgets: Vec::new(),
         rxchan: rxdata,
         glyphs: glyphs,
-        palette: palette
+        palette: palette.clone()
     };
 
     for fao in p.files.iter() {
@@ -194,21 +199,27 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params)
                 let ring = 
                     viz::HistoRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
-                     state::RingDataBuffer::new(state::RingDataBufferType::Ints));
+                     palette.clone(),
+                     state::RingDataBuffer::new(state::RingDataBufferType::Ints), 
+                     );
                 app.widgets.push(Box::new(ring));
             },
             "gr" => {
                 let ring = 
                     viz::GaugesRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
-                     state::RingDataBuffer::new(state::RingDataBufferType::IntVec));
+                     palette.clone(),
+                     state::RingDataBuffer::new(state::RingDataBufferType::IntVec), 
+                     );
                 app.widgets.push(Box::new(ring));
             }
             "tr" => {
                 let ring = 
                     viz::TextRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
-                     state::RingDataBuffer::new(state::RingDataBufferType::Text));
+                     palette.clone(),
+                     state::RingDataBuffer::new(state::RingDataBufferType::Text), 
+                     );
                 app.widgets.push(Box::new(ring));
             }
             &_ => {}

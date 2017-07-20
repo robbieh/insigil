@@ -2,6 +2,8 @@ use std::collections::VecDeque;
 
 use std::sync::{Arc, Mutex};
 
+use graphics::types::Color;
+
 //#[derive(Debug)]
 //pub enum RingVizType {
 //    Hist, Interval, Text
@@ -58,9 +60,10 @@ pub enum Actions {
     plus
 }
 
+#[derive(Debug, Clone, Deserialize)]
 pub struct Palette {
-    background: [f32, f32, f32, f32]
-    primary: [f32, f32, f32, f32]
-    secondary: [f32, f32, f32, f32]
-    highlight: [f32, f32, f32, f32]
+    pub background: Color,
+    pub primary: Color,
+    pub secondary: Color,
+    pub highlight: Color
 }

@@ -23,9 +23,6 @@ use widget::Widget;
 
 const MAX_ENTRIES: usize = 200;
 
-const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-const GREEN_05: [f32; 4] = [0.0, 1.0, 0.0, 0.5];
-
 pub struct HistoRing {
     sliding: bool,
     targetTmMs: Tm,
@@ -34,13 +31,14 @@ pub struct HistoRing {
     x: f64,
     y: f64,
     id: i32,
-    dat: RingDataBuffer
+    dat: RingDataBuffer,
+    palette: state::Palette
 }
 
 impl HistoRing {
     pub fn new(x: f64, y: f64, 
                size: f64, innerrad: f64, 
-               id: i32, 
+               id: i32,  palette: state::Palette,
                dat: state::RingDataBuffer) -> HistoRing {
         println!("new historing size {:?} using data id {:?}",
                  size.clone(), id.clone());
@@ -50,7 +48,8 @@ impl HistoRing {
             size: size,
             innerrad: innerrad,
             x: x, y: y,
-            id: id, dat: dat
+            id: id, dat: dat,
+            palette: palette
         }
     }
 }
@@ -78,7 +77,7 @@ impl Widget for HistoRing
              self.size / 2.0);
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
-        circle_arc(GREEN_05, 0.5, 0.0, 6.282, ringbounds, transform, g);
+        circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
         match *dat {
             RingDataBuffer::Ints(ref intsq) => {
                 let (sum,mx,avg) = {
@@ -99,7 +98,7 @@ impl Widget for HistoRing
                         ((1.0 * radius - buffer) - (i.clone() as f64 * scale - buffer)).min(1.0 * radius - buffer)
                         );
                     //println!("{:?}", line);
-                    rectangle(GREEN_05, line, t, g);
+                    rectangle(self.palette.primary, line, t, g);
                 }
             },
             RingDataBuffer::Text(ref text) => {
@@ -148,13 +147,14 @@ pub struct GaugesRing {
     x: f64,
     y: f64,
     id: i32,
-    dat: RingDataBuffer
+    dat: RingDataBuffer,
+    palette: state::Palette
 }
 
 impl GaugesRing {
     pub fn new(x: f64, y: f64, 
                size: f64, innerrad: f64, 
-               id: i32, 
+               id: i32, palette: state::Palette, 
                dat: state::RingDataBuffer) -> GaugesRing {
         println!("new gaugesring size {:?} using data id {:?}",
                  size.clone(), id.clone());
@@ -164,7 +164,8 @@ impl GaugesRing {
             size: size,
             innerrad: innerrad,
             x: x, y: y,
-            id: id, dat: dat
+            id: id, dat: dat,
+            palette: palette
         }
     }
 }
@@ -192,7 +193,7 @@ impl Widget for GaugesRing
 
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
-        circle_arc(GREEN_05, 0.5, 0.0, 6.282, ringbounds, transform, g);
+        circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
         match *dat {
             RingDataBuffer::Ints(ref intsq) => {
             },
@@ -220,7 +221,7 @@ impl Widget for GaugesRing
                         let arc_rot = arcsize_max_half * 2.0 * idx as f64;
                         let t = transform.rot_rad(arc_rot);
                         let sz = arcsize_max_half * 0.01 * *i as f64; 
-                        circle_arc(GREEN_05, working * 0.5 - buffer, 
+                        circle_arc(self.palette.primary, working * 0.5 - buffer, 
                                    - sz, sz,
                                    ringbounds, t, g);
                         }
@@ -260,13 +261,14 @@ pub struct TextRing {
     x: f64,
     y: f64,
     id: i32,
-    dat: RingDataBuffer
+    dat: RingDataBuffer,
+    palette: state::Palette
 }
 
 impl TextRing {
     pub fn new(x: f64, y: f64, 
                size: f64, innerrad: f64, 
-               id: i32, 
+               id: i32, palette: state::Palette,
                dat: state::RingDataBuffer) -> TextRing {
         println!("new gaugesring size {:?} using data id {:?}",
                  size.clone(), id.clone());
@@ -276,7 +278,8 @@ impl TextRing {
             size: size,
             innerrad: innerrad,
             x: x, y: y,
-            id: id, dat: dat
+            id: id, dat: dat,
+            palette: palette
         }
     }
 }
@@ -306,7 +309,7 @@ impl Widget for TextRing
 
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
-        circle_arc(GREEN_05, 0.5, 0.0, 6.282, ringbounds, transform, g);
+        circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
         let mut cursor = 0.0;
         match *dat {
             RingDataBuffer::Ints(ref intsq) => {
@@ -328,7 +331,7 @@ impl Widget for TextRing
                 let t = transform.rot_rad(cursor).trans(0.0,radius - buffer);
                 cursor = cursor + theta;
 
-                piston_window::text([0.0,1.0,0.0,0.5], fontsize, 
+                piston_window::text(self.palette.primary, fontsize, 
                                     &c.to_string(), glyphs, t, g);
                 }
             },
