@@ -9,32 +9,19 @@ extern crate serde;
 extern crate serde_derive;
 extern crate toml;
 
-use piston::event_loop::*;
 use piston::input::*;
-use piston_window::{PistonWindow, G2dTexture};
+use piston_window::{PistonWindow};
 use opengl_graphics::glyph_cache::GlyphCache;
-use piston::window::{AdvancedWindow, Window, WindowSettings};
+use piston::window::{WindowSettings};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
-use graphics::{Context, Graphics, Transformed};
-
-use std::time::Duration;
+use graphics::{Transformed};
 
 use std::thread;
-use std::io::{stdin, BufRead};
-use std::sync::{Arc, Mutex};
 
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
 
-use std::collections::HashMap;
-use std::collections::VecDeque;
-
-use std::cmp::{min,max};
-use std::slice::Split;
-
 use std::env;
-
-use time::Timespec;
 
 mod data_acquisition;
 mod state;
@@ -45,7 +32,7 @@ mod config;
 use widget::Widget;
 
 pub struct App {
-    p: params,
+    p: Params,
     gl: GlGraphics,
     widgets: Vec<Box<Widget>>,
     rxchan: Receiver<state::ChannelData>,
@@ -54,11 +41,6 @@ pub struct App {
 }
 
 const FONT: &str = "font/Hack-Regular.ttf";
-
-const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-const GREEN_10: [f32; 4] = [0.0, 1.0, 0.0, 0.1];
-const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
-
 const DEFAULT_WINDOW_SIZE: u32 = 640;
 const DEFAULT_RING_PCT: u32 = 30;
 
@@ -81,7 +63,6 @@ impl App {
     fn update(&mut self, args: &UpdateArgs) {
     }
     fn receive(&mut self) {
-        let maxentries = 256;
         for rdin in self.rxchan.try_iter() {
             for widget in self.widgets.iter_mut() {
                 let cloneddat = rdin.dat.clone();
@@ -95,47 +76,47 @@ impl App {
 
 
 #[derive(Debug, Clone)]
-pub struct file_and_opts {
+pub struct FileAndOpts {
     file: String,
     opts: String,
-    vizType: state::RingDataBufferType
+    viz_type: state::RingDataBufferType
 }
 
 #[derive(Debug, Clone)]
-pub struct params {
-    files: Vec<file_and_opts>,
+pub struct Params {
+    files: Vec<FileAndOpts>,
     //other settings
 }
 
-pub fn parse_args(mut args: std::env::Args) -> params {
-    let mut p = params {
-        files: Vec::<file_and_opts>::new(),
+pub fn parse_args(mut args: std::env::Args) -> Params {
+    let mut p = Params {
+        files: Vec::<FileAndOpts>::new(),
     };
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "-hr" => {
                 let f = args.next().unwrap();
-                let fao = file_and_opts { file: f, opts: "hr".to_string(),
-                                  vizType: state::RingDataBufferType::Ints};
+                let fao = FileAndOpts { file: f, opts: "hr".to_string(),
+                                  viz_type: state::RingDataBufferType::Ints};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-gr" => {
                 let f = args.next().unwrap();
-                let fao = file_and_opts { file: f, opts: "gr".to_string(),
-                                  vizType: state::RingDataBufferType::IntVec};
+                let fao = FileAndOpts { file: f, opts: "gr".to_string(),
+                                  viz_type: state::RingDataBufferType::IntVec};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-tr" => {
                 let f = args.next().unwrap();
-                let fao = file_and_opts { file: f, opts: "tr".to_string(),
-                                  vizType: state::RingDataBufferType::Text};
+                let fao = FileAndOpts { file: f, opts: "tr".to_string(),
+                                  viz_type: state::RingDataBufferType::Text};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             _ => {
-                println!("misc arg {:?}", arg)
+                //println!("misc arg {:?}", arg)
             }
         }
     };
@@ -144,25 +125,21 @@ pub fn parse_args(mut args: std::env::Args) -> params {
 
 /// This will spwan threads paired with widgets, and create
 /// the App struct with widget vec and receiver channel
-pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params) -> App {
-    println!("params\n=====\n{:?}", p);
+pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params) -> App {
+    //println!("params\n=====\n{:?}", p);
 
-    let (txdata,mut rxdata): (Sender<state::ChannelData>, Receiver<state::ChannelData>) = mpsc::channel();
+    let (txdata,rxdata): (Sender<state::ChannelData>, Receiver<state::ChannelData>) = mpsc::channel();
 
     //later: perhaps cmd line params to set this
     let wsz = DEFAULT_WINDOW_SIZE;
     let mut wcount = 0;
     // a counter to whittle down with each new widget
-    //let mut sz = wsz as f64 / 3.0; //fudge factor for hidpi bug
     let mut sz = wsz as f64 / 1.0; 
-    let pct = p.files.len() as f64/ 10.0;
-    //println!("{:?} {:?}", pct, p.files.len());
-    let mut rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
-    //let mut rwidth = sz * (pct as f64 ) * 0.25;
+    let rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
 
     let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
     let ref font = assets.join(FONT);
-    let mut glyphs = GlyphCache::new(font).unwrap();
+    let glyphs = GlyphCache::new(font).unwrap();
 
     let palette = config::read_palette();
 
@@ -179,7 +156,7 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & params)
         let thread_tx = txdata.clone();
         let f = fao.file.clone();
         let fo = fao.opts.clone();
-        let ft = fao.vizType.clone();
+        let ft = fao.viz_type.clone();
         if f == "-" {
             thread::spawn(move|| 
                           { data_acquisition::stdin_reader(thread_tx, 

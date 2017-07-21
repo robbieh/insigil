@@ -2,7 +2,6 @@ use state;
 use toml;
 use std::fs::File;
 use std::io::Read;
-use std::path::{Path, PathBuf};
 use std::env;
 
 #[derive(Debug, Deserialize )]
@@ -10,7 +9,7 @@ pub struct Config {
     palette: Option<state::Palette>
 }
 
-const default_palette: state::Palette = state::Palette{
+const DEFAULT_PALETTE: state::Palette = state::Palette{
             background: [0.22, 0.16, 0.29, 1.0],
                primary: [0.01, 0.58, 0.31, 0.8],
              secondary: [0.15, 0.90, 0.15, 0.8],
@@ -25,7 +24,7 @@ pub fn parse_palette_file(path: &str) -> Config {
         Ok(file) => file,
         Err(_) => {
             println!("Error trying to open file {:?}", path);
-            return Config{ palette: Some(default_palette) };
+            return Config{ palette: Some(DEFAULT_PALETTE) };
         }
     };
 
@@ -44,7 +43,7 @@ pub fn parse_palette_file(path: &str) -> Config {
 pub fn read_palette() -> state::Palette {
 
     match env::home_dir() {
-        None => default_palette,
+        None => DEFAULT_PALETTE,
         Some(path) => {
             parse_palette_file(
                 path.join(".insigil.colors.toml").to_str().unwrap())

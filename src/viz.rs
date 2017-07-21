@@ -6,11 +6,11 @@ extern crate opengl_graphics;
 use std::collections::VecDeque;
 
 use state;
-use state::{RingDataBuffer, RingDataBufferType, RingData};
+use state::{RingDataBuffer, RingData};
 use std::cmp::{min,max};
-use opengl_graphics::{ GlGraphics, OpenGL }; 
+use opengl_graphics::{ GlGraphics }; 
 use opengl_graphics::glyph_cache::GlyphCache;
-use piston_window::{self,Context,Transformed,G2dTexture};
+use piston_window::{self, Context, Transformed };
 use graphics::character::CharacterCache;
 //use graphics::{Context, Graphics, Transformed, math};
 use graphics::*;
@@ -40,8 +40,7 @@ impl HistoRing {
                size: f64, innerrad: f64, 
                id: i32,  palette: state::Palette,
                dat: state::RingDataBuffer) -> HistoRing {
-        println!("new historing size {:?} using data id {:?}",
-                 size.clone(), id.clone());
+        //println!("new historing size {:?} using data id {:?}", size.clone(), id.clone());
         HistoRing { 
             sliding: false,
             targetTmMs: time::now(),
@@ -156,8 +155,7 @@ impl GaugesRing {
                size: f64, innerrad: f64, 
                id: i32, palette: state::Palette, 
                dat: state::RingDataBuffer) -> GaugesRing {
-        println!("new gaugesring size {:?} using data id {:?}",
-                 size.clone(), id.clone());
+        //println!("new gaugesring size {:?} using data id {:?}", size.clone(), id.clone());
         GaugesRing { 
             sliding: false,
             targetTmMs: time::now(),
@@ -349,7 +347,6 @@ impl Widget for TextRing
         rdata: state::RingData
         ) {
         match rdata {
-            RingData::Int(i) => {}, 
             RingData::Text(s) => {
                 match self.dat {
                     RingDataBuffer::Text(ref mut txtq) =>
@@ -364,8 +361,7 @@ impl Widget for TextRing
                     _ => {}
                 }
             },
-            RingData::Date(d) => {},
-            RingData::IntVec(iv) => {},
+            _ => {},
         }
     }
 }

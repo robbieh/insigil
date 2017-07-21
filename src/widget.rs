@@ -1,9 +1,7 @@
 
-use std::cmp::{min,max};
-use opengl_graphics::{ GlGraphics, OpenGL }; 
+use opengl_graphics::{ GlGraphics }; 
 use opengl_graphics::glyph_cache::GlyphCache;
-use graphics::{Context, Graphics, math};
-use piston_window::{G2dTexture};
+use graphics::{Context, math};
 use state;
 
 pub trait Widget {

@@ -2,7 +2,7 @@
 extern crate std;
 use std::io::{stdin, BufRead, BufReader};
 use state;
-use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc::{Sender};
 use std::sync::mpsc;
 use std::fs::File;
 use std::thread;
@@ -33,7 +33,6 @@ fn parse_line(line: &str, t: & state::RingDataBufferType) -> Option<state::RingD
                 }
             }
         },
-        _ => None
     }
 
 }
@@ -43,7 +42,7 @@ pub fn stdin_reader(txdata: Sender<state::ChannelData>,
                     rdbtype: state::RingDataBufferType
                    ) {
     let sin = std::io::stdin();
-    println!("starting stin_reader");
+    //println!("starting stdin_reader");
     for line in sin.lock().lines() {
         let line = line.unwrap();
         //println!("\nEntered: {:?}\n",line.clone());
@@ -70,8 +69,7 @@ pub fn file_reader(txdata: Sender<state::ChannelData>,
     let mut f = File::open(filename.clone()).unwrap();
     let mut reader = BufReader::new(f);
     let mut buffer = String::new();
-    println!("starting file_reader on {:?} for id {:?}", 
-             filename.clone(), id.clone());
+    //println!("starting file_reader on {:?} for id {:?}",filename.clone(), id.clone());
     loop {
         buffer = String::new();
         reader.read_line(&mut buffer);

@@ -1,7 +1,5 @@
 use std::collections::VecDeque;
 
-use std::sync::{Arc, Mutex};
-
 use graphics::types::Color;
 
 //#[derive(Debug)]
@@ -53,11 +51,11 @@ impl RingDataBuffer {
 
 #[derive(Debug)]
 pub enum Actions {
-    esc,
-    enter,
-    up,
-    down,
-    plus
+    Esc,
+    Enter,
+    Up,
+    Down,
+    Plus
 }
 
 #[derive(Debug, Clone, Deserialize)]
