@@ -1,5 +1,5 @@
 [root]
-name = "twirl"
+name = "insigil"
 version = "0.1.0"
 dependencies = [
  "find_folder 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
