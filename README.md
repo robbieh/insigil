@@ -26,7 +26,7 @@ insigil -hr numbers
 
 Display the system's load average for the last 1, 5, and 15 mintues as three gauges:
 
-```insigil -gr <( while true; do cut -f 1-3 -d \  /proc/loadavg | tr -d . ; sleep 1; done )```
+```insigil -gr <( while true; do cut -f 1-3 -d ''  /proc/loadavg | tr -d . ; sleep 1; done )```
 
 #### Text ring: -tr
 
