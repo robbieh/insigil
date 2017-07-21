@@ -53,8 +53,8 @@ impl App {
 
         self.gl.draw(args.viewport(), |c, g| {
             piston_window::clear(bg,g);
-            //let transform = c.transform.trans(110.0,530.0);
-            let transform = c.transform.trans(x,y);
+            let transform = c.transform.trans(110.0,530.0);
+            //let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
                 widget.draw(glyphs, &c, transform, g);
             }
@@ -134,7 +134,7 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
     let wsz = DEFAULT_WINDOW_SIZE;
     let mut wcount = 0;
     // a counter to whittle down with each new widget
-    let mut sz = wsz as f64 / 1.0; 
+    let mut sz = wsz as f64 / 3.0; 
     let rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
 
     let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
