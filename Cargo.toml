@@ -4,7 +4,36 @@ version = "0.1.0"
 authors = ["Robbie Huffman <robbie.huffman@gmail.com>"]
 
 [dependencies]
+time = "*"
+piston = "0.32.0"
+piston2d-graphics = "0.21.1"
+piston_window = "*"
+find_folder = "*"
+piston2d-opengl_graphics = "0.44.0"
+unicode-segmentation = "1.2.0"
+toml = "0.4"
+serde = "1.0"
+serde_derive = "1.0"
 
-[dependencies.sdl2]
-default-features = false
-features = ["gfx"]
+[profile.release]
+lto = true
+
+[dependencies.pistoncore-sdl2_window]
+version = "0.43.0"
+optional = true
+
+[dependencies.pistoncore-glfw_window]
+version = "0.34.0"
+optional = true
+
+[dependencies.pistoncore-glutin_window]
+version = "0.37.0"
+optional = true
+
+
+[features]
+default = ["include_glutin"]
+include_sdl2 = ["pistoncore-sdl2_window"]
+include_glfw = ["pistoncore-glfw_window"]
+include_glutin = ["pistoncore-glutin_window"]
+
