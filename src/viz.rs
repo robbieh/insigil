@@ -32,7 +32,7 @@ pub struct HistoRing {
     x: f64,
     y: f64,
     id: i32,
-    h: Histogram<u64>,
+    dat: Histogram<u64>,
     palette: state::Palette
 }
 
@@ -49,7 +49,7 @@ impl HistoRing {
             innerrad: innerrad,
             x: x, y: y,
             id: id, 
-            h: Histogram::<u64>::new(2).unwrap(),
+            dat: Histogram::<u64>::new(2).unwrap(),
             palette: palette
         }
     }
@@ -79,40 +79,28 @@ impl Widget for HistoRing
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
         circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
-        match *dat {
-            RingDataBuffer::Ints(ref intsq) => {
-                let (sum,mx,avg) = {
-                    let sum: i32 = intsq.iter().sum();
-                    let mx = intsq.iter().fold(0,|largest, &i| max(i, largest));
-                    let avg: f32 = sum as f32 / intsq.len() as f32;
-                    //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
-                    (sum,mx,avg)
-                };
-                let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
-                let scale = working / mx as f64;
-                for (idx, i) in intsq.iter().enumerate() {
-                    //println!("draw {:?} {:?}", idx, i.clone());
-                    let t = transform.rot_rad(0.031415 * idx as f64);
-                    let line = rectangle::rectangle_by_corners(
-                        3.0, (1.0 * radius - buffer),
-                        -3.0, 
-                        ((1.0 * radius - buffer) - (i.clone() as f64 * scale - buffer)).min(1.0 * radius - buffer)
-                        );
-                    //println!("{:?}", line);
-                    rectangle(self.palette.primary, line, t, g);
-                }
-            },
-            RingDataBuffer::Text(ref text) => {
-                println!("hrtext{:?}", text);
-            },
-            RingDataBuffer::DatedInts(ref dis) => {
-                println!("hrdates{:?}", dis);
-            },
-            RingDataBuffer::IntVec(ref iv) => {
-                println!("hrintvec{:?}", iv);
-            }
-
+        //let (sum,mx,avg) = {
+        //    let sum: i32 = intsq.iter().sum();
+        //    let mx = intsq.iter().fold(0,|largest, &i| max(i, largest));
+        //    let avg: f32 = sum as f32 / intsq.len() as f32;
+        //    //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
+        //    (sum,mx,avg)
+        //};
+        let h = self.dat;
+        let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
+        let scale = working / h.max() as f64;
+        for (idx, i) in intsq.iter().enumerate() {
+            //println!("draw {:?} {:?}", idx, i.clone());
+            let t = transform.rot_rad(0.031415 * idx as f64);
+            let line = rectangle::rectangle_by_corners(
+                3.0, (1.0 * radius - buffer),
+                -3.0, 
+                ((1.0 * radius - buffer) - (i.clone() as f64 * scale - buffer)).min(1.0 * radius - buffer)
+                );
+            //println!("{:?}", line);
+            rectangle(self.palette.primary, line, t, g);
         }
+
 
 
     }
@@ -123,15 +111,8 @@ impl Widget for HistoRing
         ) {
         match rdata {
             RingData::Int(i) => { 
-                match self.dat {
-                    RingDataBuffer::Ints(ref mut intq) => 
-                    { intq.push_front(i) ;
-                        //println!("pushed: {:?}", i)
-                      if intq.len() > MAX_ENTRIES
-                          { let _ = intq.pop_back();}
-                    },
-                    _ => {}
-                }
+                //add to histogram here
+                //
             },
             RingData::Text(s) => {},
             RingData::Date(d) => {},

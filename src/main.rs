@@ -30,6 +30,7 @@ mod viz;
 mod widget;
 mod config;
 
+use state::{RingDataType};
 use widget::Widget;
 
 pub struct App {
@@ -80,6 +81,7 @@ impl App {
 pub struct FileAndOpts {
     file: String,
     opts: String,
+    datType: RingDataType
 }
 
 #[derive(Debug, Clone)]
@@ -97,21 +99,24 @@ pub fn parse_args(mut args: std::env::Args) -> Params {
             "-hr" => {
                 let f = args.next().unwrap();
                 let fao = FileAndOpts { file: f, 
-                                        opts: "hr".to_string(), };
+                                        opts: "hr".to_string(), 
+                                        datType: RingDataType::Int};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-gr" => {
                 let f = args.next().unwrap();
                 let fao = FileAndOpts { file: f, 
-                                        opts: "gr".to_string(), };
+                                        opts: "gr".to_string(), 
+                                        datType: RingDataType::IntVec};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-tr" => {
                 let f = args.next().unwrap();
                 let fao = FileAndOpts { file: f, 
-                                        opts: "tr".to_string(), };
+                                        opts: "tr".to_string(), 
+                                         datType: RingDataType::Text};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
@@ -156,6 +161,7 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
         let thread_tx = txdata.clone();
         let f = fao.file.clone();
         let fo = fao.opts.clone();
+        let ft = fao.datType.clone();
         if f == "-" {
             thread::spawn(move|| 
                           { data_acquisition::stdin_reader(thread_tx, 

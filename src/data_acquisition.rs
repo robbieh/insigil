@@ -8,9 +8,9 @@ use std::fs::File;
 use std::thread;
 use std::time;
 
-fn parse_line(line: &str, t: & state::RingDataBufferType) -> Option<state::RingData> {
+fn parse_line(line: &str, t: & state::RingDataType) -> Option<state::RingData> {
     match *t {
-        state::RingDataBufferType::Ints => {
+        state::RingDataType::Int => {
             match line.parse::<i32>() {
                 Ok(i) => Some(state::RingData::Int(i)),
                 Err(msg) => {
@@ -20,11 +20,11 @@ fn parse_line(line: &str, t: & state::RingDataBufferType) -> Option<state::RingD
 
             }
         },
-        state::RingDataBufferType::Text => {
+        state::RingDataType::Text => {
             Some(state::RingData::Text(String::from(line)))
         },
-        state::RingDataBufferType::DatedInts => {None},
-        state::RingDataBufferType::IntVec => {
+        state::RingDataType::DatedInt => {None},
+        state::RingDataType::IntVec => {
             match line.split(' ').map(|v| v.parse::<i32>()).collect() {
                 Ok(v) => Some(state::RingData::IntVec(v)),
                 Err(msg) => {
@@ -39,7 +39,7 @@ fn parse_line(line: &str, t: & state::RingDataBufferType) -> Option<state::RingD
 
 pub fn stdin_reader(txdata: Sender<state::ChannelData>,
                     id: i32,
-                    rdbtype: state::RingDataBufferType
+                    rdbtype: state::RingDataType
                    ) {
     let sin = std::io::stdin();
     //println!("starting stdin_reader");
@@ -64,7 +64,7 @@ pub fn stdin_reader(txdata: Sender<state::ChannelData>,
 pub fn file_reader(txdata: Sender<state::ChannelData>,
                    id: i32,
                    filename: String,
-                   rdbtype: state::RingDataBufferType
+                   rdbtype: state::RingDataType
                   ) {
     let mut f = File::open(filename.clone()).unwrap();
     let mut reader = BufReader::new(f);

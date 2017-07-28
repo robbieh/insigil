@@ -9,6 +9,9 @@ use graphics::types::Color;
 // need... a data structure to fill from the thread
 
 #[derive(Debug,Clone)]
+pub enum RingDataType { Int, Text, DatedInt, IntVec }
+
+#[derive(Debug,Clone)]
 pub enum RingData {
     Int(i32),
     Text(String),
