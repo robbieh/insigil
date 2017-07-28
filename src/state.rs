@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-
 use graphics::types::Color;
 
 //#[derive(Debug)]
@@ -23,7 +22,7 @@ pub struct ChannelData {
   pub dat: RingData
 }
 
-#[derive(Debug)]
+//#[derive(Debug)]
 pub enum RingDataBuffer {
     Ints(VecDeque<i32>),
     Text(VecDeque<char>),
@@ -31,23 +30,7 @@ pub enum RingDataBuffer {
     IntVec(VecDeque<Vec<i32>>)
 }
 
-#[derive(Debug,Clone)]
-pub enum RingDataBufferType { Ints, Text, DatedInts,IntVec }
 
-impl RingDataBuffer {
-    pub fn new(t: RingDataBufferType) -> RingDataBuffer {
-        match t {
-            RingDataBufferType::Ints => 
-                RingDataBuffer::Ints(VecDeque::new()),
-            RingDataBufferType::Text => 
-                RingDataBuffer::Text(VecDeque::new()),
-            RingDataBufferType::DatedInts => 
-                RingDataBuffer::DatedInts(VecDeque::new()),
-            RingDataBufferType::IntVec => 
-                RingDataBuffer::IntVec(VecDeque::new())
-        }
-    }
-}
 
 #[derive(Debug)]
 pub enum Actions {
