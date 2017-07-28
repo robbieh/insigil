@@ -68,7 +68,6 @@ impl Widget for HistoRing
         ) {
         let radius = self.size * 0.5;
         let buffer = 2.0;
-        let ref mut dat = self.dat;
 
         //calculate stuff
 
@@ -86,11 +85,12 @@ impl Widget for HistoRing
         //    //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
         //    (sum,mx,avg)
         //};
-        let h = self.dat;
+        let ref mut h = self.dat;
         let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
         let scale = working / h.max() as f64;
-        for (idx, i) in intsq.iter().enumerate() {
+        for (idx, itrv) in h.iter_linear(360).enumerate() {
             //println!("draw {:?} {:?}", idx, i.clone());
+            let i = itrv.count_at_value();
             let t = transform.rot_rad(0.031415 * idx as f64);
             let line = rectangle::rectangle_by_corners(
                 3.0, (1.0 * radius - buffer),
@@ -109,10 +109,12 @@ impl Widget for HistoRing
         &mut self,
         rdata: state::RingData
         ) {
+        let ref mut h = self.dat;
         match rdata {
             RingData::Int(i) => { 
                 //add to histogram here
                 //
+                *h += i as u64;
             },
             RingData::Text(s) => {},
             RingData::Date(d) => {},
@@ -176,7 +178,7 @@ impl Widget for GaugesRing
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
         circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
 
-        let iv = self.intvec;
+        let ref mut iv = self.intvec;
         //println!("griv {:?}", iv);
         let working = (radius - buffer - 
                        (radius - self.innerrad + buffer )) as f64;
@@ -205,20 +207,18 @@ impl Widget for GaugesRing
         &mut self,
         rdata: state::RingData
         ) {
+        let ref mut intvecq = self.intvec;
         match rdata {
             RingData::Int(i) => {}, 
             RingData::Text(s) => {},
             RingData::Date(d) => {},
             RingData::IntVec(iv) => {
-                    let intvecq = self.intvec;
-                    { intvecq.push_front(iv.clone()) ;
-                        //println!("pushed: {:?}", iv);
-                      if intvecq.len() > 3
-                          { let _ = intvecq.pop_back();}
-                    },
-                }
-            },
-    }
+                intvecq.push_front(iv.clone()) ;
+                  //println!("pushed: {:?}", iv);
+                if intvecq.len() > 3 { let _ = intvecq.pop_back();}
+                },
+            }
+        }
 }
 
 pub struct TextRing {
@@ -265,7 +265,6 @@ impl Widget for TextRing
         ) {
         let radius = self.size * 0.5;
         let buffer = 2.0;
-        let ref mut dat = self.dat;
 
         let fontsize = (0.1 * (radius - buffer * 2.0)) as u32; //wild wild guess on 0.1* to scale it down...need to look at device dpi or something? hrm.
 
@@ -279,7 +278,7 @@ impl Widget for TextRing
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
         circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
         let mut cursor = 0.0;
-        let text = self.dat;
+        let ref mut text = self.dat;
         //for (idx,c) in UnicodeSegmentation::graphemes(text,true)
         //    .iter().enumerate() 
         for (idx,c) in text.iter().enumerate() 
@@ -306,7 +305,7 @@ impl Widget for TextRing
         ) {
         match rdata {
             RingData::Text(s) => {
-                let txtq = self.dat;
+                let ref mut txtq = self.dat;
                 //println!("{:?}",txtq);
                 for c in s.chars() {
                     txtq.push_front(c);
