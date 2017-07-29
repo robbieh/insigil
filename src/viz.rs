@@ -87,19 +87,29 @@ impl Widget for HistoRing
         //};
         let ref mut h = self.dat;
         let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
-        let scale = working / h.max() as f64;
-        for (idx, itrv) in h.iter_linear(360).enumerate() {
+        let values: Vec<u64> =h.iter_percentiles(10).map(|itrv|itrv.count_at_value()).collect();
+        let mx = values.iter().fold(0u64, |mx, val| max(mx,*val));
+        let scale = working / mx as f64;
+        print!("{:?} ", scale);
+        //print!("{:?} {:?} :: ", h.high(), h.max());
+        let x1=3.0;
+        let x2=3.0;
+        let y1=(1.0 * radius - buffer);
+        for (idx, i) in values.iter().enumerate() {
             //println!("draw {:?} {:?}", idx, i.clone());
-            let i = itrv.count_at_value();
+            //println!("idx {:?} i {:?} value {:?} percentile {:?} countat {:?} countsince {:?}", idx, i, itrv.value(), itrv.percentile(), itrv.count_at_value(), itrv.count_since_last_iteration());
+
             let t = transform.rot_rad(0.031415 * idx as f64);
+            let y2= (y1 - (*i as f64 * scale )).min(y1);
+            //print!("{:?} {:?} {:?}#", itrv.count_at_value(), y1, y2);
+            print!("[{:?},{:?}] ", y1, y2);
             let line = rectangle::rectangle_by_corners(
-                3.0, (1.0 * radius - buffer),
-                -3.0, 
-                ((1.0 * radius - buffer) - (i.clone() as f64 * scale - buffer)).min(1.0 * radius - buffer)
-                );
+                x1, y1,
+                x2, y2);
             //println!("{:?}", line);
             rectangle(self.palette.primary, line, t, g);
         }
+        println!("");
 
 
 
@@ -114,6 +124,7 @@ impl Widget for HistoRing
             RingData::Int(i) => { 
                 //add to histogram here
                 //
+                //print!("{:?}\r",i);
                 *h += i as u64;
             },
             RingData::Text(s) => {},
