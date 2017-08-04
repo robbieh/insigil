@@ -44,7 +44,7 @@ pub struct App {
 
 const FONT: &str = "font/Hack-Regular.ttf";
 const DEFAULT_WINDOW_SIZE: u32 = 640;
-const DEFAULT_RING_PCT: u32 = 30;
+const DEFAULT_RING_PCT: u32 = 50;
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {

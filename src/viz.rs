@@ -20,6 +20,8 @@ use time::Tm;
 use widget::Widget;
 use hdrsample::Histogram;
 
+use std::f64::consts::{ PI };
+
 //use unicode_segmentation::UnicodeSegmentation;
 
 const MAX_ENTRIES: usize = 200;
@@ -68,6 +70,7 @@ impl Widget for HistoRing
         ) {
         let radius = self.size * 0.5;
         let buffer = 2.0;
+        let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
 
         //calculate stuff
 
@@ -75,6 +78,11 @@ impl Widget for HistoRing
             (self.x,
              self.y,
              self.size / 2.0);
+        let ringmiddle=rectangle::centered_square
+            (self.x,
+             self.y,
+             self.size / 2.0 - buffer - working * 0.5 );
+        let ringwidth=radius - self.innerrad - buffer - buffer;
         //draw stuff
         //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
         circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
@@ -86,30 +94,32 @@ impl Widget for HistoRing
         //    (sum,mx,avg)
         //};
         let ref mut h = self.dat;
-        let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
         let values: Vec<u64> =h.iter_percentiles(10).map(|itrv|itrv.count_at_value()).collect();
         let mx = values.iter().fold(0u64, |mx, val| max(mx,*val));
         let scale = working / mx as f64;
-        print!("{:?} ", scale);
+        let slice =  (PI * 2.0 / values.len() as f64);
+        //print!("{:?} ", slice);
         //print!("{:?} {:?} :: ", h.high(), h.max());
         let x1=3.0;
-        let x2=3.0;
+        let x2=-x1;
         let y1=(1.0 * radius - buffer);
         for (idx, i) in values.iter().enumerate() {
             //println!("draw {:?} {:?}", idx, i.clone());
             //println!("idx {:?} i {:?} value {:?} percentile {:?} countat {:?} countsince {:?}", idx, i, itrv.value(), itrv.percentile(), itrv.count_at_value(), itrv.count_since_last_iteration());
 
-            let t = transform.rot_rad(0.031415 * idx as f64);
-            let y2= (y1 - (*i as f64 * scale )).min(y1);
+            let t = transform.rot_rad(slice * idx as f64);
+            let iheight = (*i as f64 * scale );
+            let y2= (y1 - iheight).min(y1);
             //print!("{:?} {:?} {:?}#", itrv.count_at_value(), y1, y2);
-            print!("[{:?},{:?}] ", y1, y2);
+            //print!("[{:?},{:?}] ", y1, y2);
             let line = rectangle::rectangle_by_corners(
                 x1, y1,
                 x2, y2);
             //println!("{:?}", line);
-            rectangle(self.palette.primary, line, t, g);
+            //rectangle(self.palette.primary, line, t, g);
+            circle_arc(self.palette.primary, iheight * 0.5 , -slice*0.5+slice*idx as f64, slice*0.5+slice*idx as f64, ringmiddle, transform, g);
         }
-        println!("");
+        //println!("");
 
 
 
