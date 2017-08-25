@@ -99,7 +99,9 @@ impl Widget for HistoRing
         let scale = working / mx as f64;
         let slice =  (PI * 2.0 / values.len() as f64);
         //print!("{:?} ", slice);
+        //print!("{:?} ", h.stdev());
         //print!("{:?} {:?} :: ", h.high(), h.max());
+        println!("{:?} {:?} :: {:?} {:?} ", h.min(), h.max(), h.max() - h.min(), h.stdev());
         let x1=3.0;
         let x2=-x1;
         let y1=(1.0 * radius - buffer);
