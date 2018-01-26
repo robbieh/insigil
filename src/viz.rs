@@ -1,4 +1,3 @@
-
 extern crate piston;
 extern crate graphics;
 extern crate opengl_graphics;
@@ -10,7 +9,8 @@ use state::{RingDataBuffer, RingData};
 use std::cmp::{min,max};
 use opengl_graphics::{ GlGraphics }; 
 use opengl_graphics::glyph_cache::GlyphCache;
-use piston_window::{self, Context, Transformed };
+use piston_window::{self, Transformed };
+use graphics::{Context, math};
 use graphics::character::CharacterCache;
 //use graphics::{Context, Graphics, Transformed, math};
 use graphics::*;
