@@ -10,8 +10,8 @@ extern crate serde_derive;
 extern crate toml;
 
 use piston::input::*;
-use piston_window::{PistonWindow};
-use opengl_graphics::glyph_cache::GlyphCache;
+use piston_window::{PistonWindow, TextureSettings};
+use opengl_graphics::GlyphCache;
 use piston::window::{WindowSettings};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
 use graphics::{Transformed};
@@ -139,7 +139,7 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
 
     let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
     let ref font = assets.join(FONT);
-    let glyphs = GlyphCache::new(font).unwrap();
+    let glyphs = GlyphCache::new(font, (), TextureSettings::new() ).unwrap();
 
     let palette = config::read_palette();
 

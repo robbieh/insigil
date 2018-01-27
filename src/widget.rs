@@ -1,6 +1,6 @@
 
 use opengl_graphics::{ GlGraphics }; 
-use opengl_graphics::glyph_cache::GlyphCache;
+use opengl_graphics::GlyphCache;
 use graphics::{Context, math};
 use state;
 
