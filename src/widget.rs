@@ -1,6 +1,6 @@
 
 use opengl_graphics::{ GlGraphics }; 
-use opengl_graphics::glyph_cache::GlyphCache;
+use opengl_graphics::GlyphCache;
 use graphics::{Context, math};
 use state;
 
@@ -9,5 +9,6 @@ pub trait Widget {
             math::Matrix2d, &mut GlGraphics);
     //fn set_center(&self, f64, f64);
     fn getid(&mut self) -> i32;
+    fn setsize(&mut self, f64);
     fn push(&mut self, state::RingData);
 }

@@ -68,11 +68,11 @@ pub fn file_reader(txdata: Sender<state::ChannelData>,
                   ) {
     let mut f = File::open(filename.clone()).unwrap();
     let mut reader = BufReader::new(f);
-    let mut buffer = String::new();
+    let mut buffer;
     //println!("starting file_reader on {:?} for id {:?}",filename.clone(), id.clone());
     loop {
         buffer = String::new();
-        reader.read_line(&mut buffer);
+        let result = reader.read_line(&mut buffer);
         thread::sleep(time::Duration::from_millis(100));
         match parse_line(buffer.trim(), & rdbtype) {
             Some(parsed) => {
