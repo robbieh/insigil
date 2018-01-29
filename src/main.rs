@@ -1,3 +1,8 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+
 extern crate time;
 extern crate piston;
 extern crate graphics;
@@ -17,6 +22,7 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 use graphics::{Transformed};
 
 use std::thread;
+use std::cmp::{min,max};
 
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
@@ -53,14 +59,24 @@ impl App {
 
         self.gl.draw(args.viewport(), |c, g| {
             piston_window::clear(bg,g);
-            let transform = c.transform.trans(110.0,530.0);
-            //let transform = c.transform.trans(x,y);
+            //let transform = c.transform.trans(110.0,530.0);
+            let transform = c.transform.trans(x,y);
             for widget in widgets.iter_mut() {
                 widget.draw(glyphs, &c, transform, g);
             }
         });
     }
     fn update(&mut self, args: &UpdateArgs) {
+    }
+    fn resize(&mut self, wevents: &[u32; 2]) {
+        let widgets = & mut self.widgets;
+        let wsz = min(wevents[0], wevents[1]);
+        let mut sz = wsz as f64 * 0.95;  //don't go all the way to the edge
+        let rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
+        for mut widget in widgets.iter_mut() {
+            widget.setsize(sz);
+            sz -= rwidth * 2.0;
+        }
     }
     fn receive(&mut self) {
         for rdin in self.rxchan.try_iter() {
@@ -226,6 +242,7 @@ pub fn main() {
         app.receive();
         if let Some(r) = e.render_args() { app.render(&r); }
         if let Some(u) = e.update_args() { app.update(&u); }
+        if let Some(w) = e.resize_args() { app.resize(&w); }
     }
 
 }

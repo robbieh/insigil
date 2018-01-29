@@ -25,7 +25,7 @@ const MAX_ENTRIES: usize = 200;
 
 pub struct HistoRing {
     sliding: bool,
-    targetTmMs: Tm,
+    target_tm_ms: Tm,
     size: f64,
     innerrad: f64,
     x: f64,
@@ -43,7 +43,7 @@ impl HistoRing {
         //println!("new historing size {:?} using data id {:?}", size.clone(), id.clone());
         HistoRing { 
             sliding: false,
-            targetTmMs: time::now(),
+            target_tm_ms: time::now(),
             size: size,
             innerrad: innerrad,
             x: x, y: y,
@@ -115,6 +115,7 @@ impl Widget for HistoRing
 
     }
     fn getid(&mut self) -> i32 { self.id }
+    fn setsize(&mut self, s: f64) { self.size = s; }
     fn push (
         &mut self,
         rdata: state::RingData
@@ -140,7 +141,7 @@ impl Widget for HistoRing
 
 pub struct GaugesRing {
     sliding: bool,
-    targetTmMs: Tm,
+    target_tm_ms: Tm,
     size: f64,
     innerrad: f64,
     x: f64,
@@ -158,7 +159,7 @@ impl GaugesRing {
         //println!("new gaugesring size {:?} using data id {:?}", size.clone(), id.clone());
         GaugesRing { 
             sliding: false,
-            targetTmMs: time::now(),
+            target_tm_ms: time::now(),
             size: size,
             innerrad: innerrad,
             x: x, y: y,
@@ -228,6 +229,7 @@ impl Widget for GaugesRing
         }
     }
     fn getid(&mut self) -> i32 { self.id }
+    fn setsize(&mut self, s: f64) { self.size = s; }
     fn push (
         &mut self,
         rdata: state::RingData
@@ -253,7 +255,7 @@ impl Widget for GaugesRing
 
 pub struct TextRing {
     sliding: bool,
-    targetTmMs: Tm,
+    target_tm_ms: Tm,
     size: f64,
     innerrad: f64,
     x: f64,
@@ -272,7 +274,7 @@ impl TextRing {
                  size.clone(), id.clone());
         TextRing { 
             sliding: false,
-            targetTmMs: time::now(),
+            target_tm_ms: time::now(),
             size: size,
             innerrad: innerrad,
             x: x, y: y,
@@ -329,7 +331,7 @@ impl Widget for TextRing
                 let t = transform.rot_rad(cursor).trans(0.0,radius - buffer);
                 cursor = cursor + theta;
 
-                piston_window::text(self.palette.primary, fontsize, 
+                let result = piston_window::text(self.palette.primary, fontsize, 
                                     &c.to_string(), glyphs, t, g);
                 }
             },
@@ -342,6 +344,7 @@ impl Widget for TextRing
         }
     }
     fn getid(&mut self) -> i32 { self.id }
+    fn setsize(&mut self, s: f64) { self.size = s; }
     fn push (
         &mut self,
         rdata: state::RingData
