@@ -13,6 +13,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate toml;
+extern crate hdrsample;
 
 use piston::input::*;
 use piston_window::{PistonWindow, TextureSettings};
@@ -35,6 +36,7 @@ mod viz;
 mod widget;
 mod config;
 
+use state::{RingDataType};
 use widget::Widget;
 
 pub struct App {
@@ -95,7 +97,7 @@ impl App {
 pub struct FileAndOpts {
     file: String,
     opts: String,
-    viz_type: state::RingDataBufferType
+    datType: RingDataType
 }
 
 #[derive(Debug, Clone)]
@@ -110,24 +112,35 @@ pub fn parse_args(mut args: std::env::Args) -> Params {
     };
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "-br" => {
+                let f = args.next().unwrap();
+                let fao = FileAndOpts { file: f, 
+                                        opts: "br".to_string(), 
+                                        datType: RingDataType::Int};
+                p.files.push(fao);
+                //println!("file {:?}", f)
+            }
             "-hr" => {
                 let f = args.next().unwrap();
-                let fao = FileAndOpts { file: f, opts: "hr".to_string(),
-                                  viz_type: state::RingDataBufferType::Ints};
+                let fao = FileAndOpts { file: f, 
+                                        opts: "hr".to_string(), 
+                                        datType: RingDataType::Int};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-gr" => {
                 let f = args.next().unwrap();
-                let fao = FileAndOpts { file: f, opts: "gr".to_string(),
-                                  viz_type: state::RingDataBufferType::IntVec};
+                let fao = FileAndOpts { file: f, 
+                                        opts: "gr".to_string(), 
+                                        datType: RingDataType::IntVec};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-tr" => {
                 let f = args.next().unwrap();
-                let fao = FileAndOpts { file: f, opts: "tr".to_string(),
-                                  viz_type: state::RingDataBufferType::Text};
+                let fao = FileAndOpts { file: f, 
+                                        opts: "tr".to_string(), 
+                                         datType: RingDataType::Text};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
@@ -172,7 +185,7 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
         let thread_tx = txdata.clone();
         let f = fao.file.clone();
         let fo = fao.opts.clone();
-        let ft = fao.viz_type.clone();
+        let ft = fao.datType.clone();
         if f == "-" {
             thread::spawn(move|| 
                           { data_acquisition::stdin_reader(thread_tx, 
@@ -188,12 +201,19 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
                           });
         }
         match fo.as_str() {
+            "br" => {
+                let ring = 
+                    viz::BarRing::new
+                    (0.0, 0.0, sz, rwidth, wcount, 
+                     palette.clone(),
+                     );
+                app.widgets.push(Box::new(ring));
+            },
             "hr" => {
                 let ring = 
                     viz::HistoRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
                      palette.clone(),
-                     state::RingDataBuffer::new(state::RingDataBufferType::Ints), 
                      );
                 app.widgets.push(Box::new(ring));
             },
@@ -202,7 +222,6 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
                     viz::GaugesRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
                      palette.clone(),
-                     state::RingDataBuffer::new(state::RingDataBufferType::IntVec), 
                      );
                 app.widgets.push(Box::new(ring));
             }
@@ -211,7 +230,6 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
                     viz::TextRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
                      palette.clone(),
-                     state::RingDataBuffer::new(state::RingDataBufferType::Text), 
                      );
                 app.widgets.push(Box::new(ring));
             }
