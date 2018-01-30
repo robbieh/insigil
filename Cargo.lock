@@ -419,7 +419,7 @@ dependencies = [
 
 [[package]]
 name = "insigil"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "find_folder 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston 0.35.0 (registry+https://github.com/rust-lang/crates.io-index)",
