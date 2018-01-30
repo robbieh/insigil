@@ -9,8 +9,9 @@ use state;
 use state::{RingDataBuffer, RingData};
 use std::cmp::{min,max};
 use opengl_graphics::{ GlGraphics }; 
-use opengl_graphics::glyph_cache::GlyphCache;
-use piston_window::{self, Context, Transformed };
+use opengl_graphics::GlyphCache;
+use piston_window::{self, Transformed };
+use graphics::{Context, math};
 use graphics::character::CharacterCache;
 //use graphics::{Context, Graphics, Transformed, math};
 use graphics::*;
@@ -127,6 +128,7 @@ impl Widget for HistoRing
 
     }
     fn getid(&mut self) -> i32 { self.id }
+    fn setsize(&mut self, s: f64) { self.size = s; }
     fn push (
         &mut self,
         rdata: state::RingData
@@ -226,6 +228,7 @@ impl Widget for GaugesRing
         }
     }
     fn getid(&mut self) -> i32 { self.id }
+    fn setsize(&mut self, s: f64) { self.size = s; }
     fn push (
         &mut self,
         rdata: state::RingData
@@ -309,7 +312,7 @@ impl Widget for TextRing
 
         //note ... arc length = theta * radius (when theta is in radians)
         //thus arc length / radius = theta
-        let arc_length = glyphs.character(fontsize, *c).width();
+        let arc_length = glyphs.character(fontsize, *c).unwrap().width();
         let theta = arc_length / radius;
         //println!("{:?} {:?} {:?} {:?}", c, arc_length, theta, cursor);
 
@@ -322,6 +325,7 @@ impl Widget for TextRing
         }
     }
     fn getid(&mut self) -> i32 { self.id }
+    fn setsize(&mut self, s: f64) { self.size = s; }
     fn push (
         &mut self,
         rdata: state::RingData
