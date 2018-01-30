@@ -164,7 +164,6 @@ impl GaugesRing {
                size: f64, innerrad: f64, 
                id: i32, palette: state::Palette, 
                ) -> GaugesRing {
-        //println!("new gaugesring size {:?} using data id {:?}", size.clone(), id.clone());
         GaugesRing { 
             sliding: false,
             target_tm_ms: time::now(),
@@ -263,8 +262,6 @@ impl TextRing {
                size: f64, innerrad: f64, 
                id: i32, palette: state::Palette,
                ) -> TextRing {
-        println!("new gaugesring size {:?} using data id {:?}",
-                 size.clone(), id.clone());
         TextRing { 
             sliding: false,
             target_tm_ms: time::now(),
