@@ -344,3 +344,96 @@ impl Widget for TextRing
         }
     }
 }
+
+pub struct BarRing {
+    sliding: bool,
+    target_tm_ms: Tm,
+    size: f64,
+    innerrad: f64,
+    x: f64,
+    y: f64,
+    id: i32,
+    intvec: VecDeque<i32>,
+    palette: state::Palette
+}
+
+impl BarRing {
+    pub fn new(x: f64, y: f64, 
+               size: f64, innerrad: f64, 
+               id: i32,  palette: state::Palette,
+               ) -> BarRing {
+        BarRing { 
+            sliding: false,
+            target_tm_ms: time::now(),
+            size: size,
+            innerrad: innerrad,
+            x: x, y: y,
+            id: id, 
+            intvec: VecDeque::new(),
+            palette: palette
+        }
+    }
+}
+
+impl Widget for BarRing
+{
+    fn draw(
+        &mut self,
+        //ringbounds: [f64; 4],
+        glyphs: &mut GlyphCache,
+        c: &Context,
+        transform: math::Matrix2d,
+        g: &mut GlGraphics,
+        //size: f64
+        ) {
+        let radius = self.size * 0.5;
+        let buffer = 2.0;
+
+        //calculate stuff
+        let ringbounds=rectangle::centered_square
+            (self.x,
+             self.y,
+             self.size / 2.0);
+        //draw stuff
+        //rectangle(GREEN,[0.0,-10.0,10.0,10.0], transform, g);
+        circle_arc(self.palette.secondary, 0.5, 0.0, 6.282, ringbounds, transform, g);
+        let ref mut iv = self.intvec;
+        let (sum,mx,avg) = {
+            let sum: i32 = iv.iter().sum();
+            let mx = iv.iter().fold(0,|largest, &i| max(i, largest));
+            let avg: f32 = sum as f32 / iv.len() as f32;
+            //print!("\rs,m,a: {:?} {:?} {:?}", sum, max, avg);
+            (sum,mx,avg)
+        };
+        let working = (radius - buffer - (radius - self.innerrad + buffer )) as f64;
+        let scale = working / mx as f64;
+        for (idx, i) in iv.iter().enumerate() {
+            //println!("draw {:?} {:?}", idx, i.clone());
+            let t = transform.rot_rad(0.031415 * idx as f64);
+            let line = rectangle::rectangle_by_corners(
+                3.0, (1.0 * radius - buffer),
+                -3.0, 
+                ((1.0 * radius - buffer) - (i.clone() as f64 * scale - buffer)).min(1.0 * radius - buffer)
+                );
+            //println!("{:?}", line);
+            rectangle(self.palette.primary, line, t, g);
+        }
+
+
+    }
+    fn getid(&mut self) -> i32 { self.id }
+    fn setsize(&mut self, s: f64) { self.size = s; }
+    fn push (
+        &mut self,
+        rdata: state::RingData
+        ) {
+        match rdata {
+            RingData::Int(i) => { 
+                self.intvec.push_front(i.clone());
+            },
+            RingData::Text(s) => {},
+            RingData::Date(d) => {},
+            RingData::IntVec(iv) => {},
+        }
+    }
+}

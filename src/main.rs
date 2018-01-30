@@ -112,6 +112,14 @@ pub fn parse_args(mut args: std::env::Args) -> Params {
     };
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "-br" => {
+                let f = args.next().unwrap();
+                let fao = FileAndOpts { file: f, 
+                                        opts: "br".to_string(), 
+                                        datType: RingDataType::Int};
+                p.files.push(fao);
+                //println!("file {:?}", f)
+            }
             "-hr" => {
                 let f = args.next().unwrap();
                 let fao = FileAndOpts { file: f, 
@@ -193,6 +201,14 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
                           });
         }
         match fo.as_str() {
+            "br" => {
+                let ring = 
+                    viz::BarRing::new
+                    (0.0, 0.0, sz, rwidth, wcount, 
+                     palette.clone(),
+                     );
+                app.widgets.push(Box::new(ring));
+            },
             "hr" => {
                 let ring = 
                     viz::HistoRing::new
