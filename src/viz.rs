@@ -97,20 +97,20 @@ impl Widget for HistoRing
         let values: Vec<u64> =h.iter_percentiles(10).map(|itrv|itrv.count_at_value()).collect();
         let mx = values.iter().fold(0u64, |mx, val| max(mx,*val));
         let scale = working / mx as f64;
-        let slice =  (PI * 2.0 / values.len() as f64);
+        let slice = PI * 2.0 / values.len() as f64;
         //print!("{:?} ", slice);
         //print!("{:?} ", h.stdev());
         //print!("{:?} {:?} :: ", h.high(), h.max());
-        println!("{:?} {:?} :: {:?} {:?} ", h.min(), h.max(), h.max() - h.min(), h.stdev());
+        //println!("{:?} {:?} :: {:?} {:?} ", h.min(), h.max(), h.max() - h.min(), h.stdev());
         let x1=3.0;
         let x2=-x1;
-        let y1=(1.0 * radius - buffer);
+        let y1=1.0 * radius - buffer;
         for (idx, i) in values.iter().enumerate() {
             //println!("draw {:?} {:?}", idx, i.clone());
             //println!("idx {:?} i {:?} value {:?} percentile {:?} countat {:?} countsince {:?}", idx, i, itrv.value(), itrv.percentile(), itrv.count_at_value(), itrv.count_since_last_iteration());
 
             let t = transform.rot_rad(slice * idx as f64);
-            let iheight = (*i as f64 * scale );
+            let iheight = *i as f64 * scale;
             let y2= (y1 - iheight).min(y1);
             //print!("{:?} {:?} {:?}#", itrv.count_at_value(), y1, y2);
             //print!("[{:?},{:?}] ", y1, y2);
@@ -319,7 +319,7 @@ impl Widget for TextRing
         let t = transform.rot_rad(cursor).trans(0.0,radius - buffer);
         cursor = cursor + theta;
 
-        piston_window::text(self.palette.primary, fontsize, 
+        let result = piston_window::text(self.palette.primary, fontsize, 
                             &c.to_string(), glyphs, t, g);
         }
     }

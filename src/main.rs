@@ -29,6 +29,8 @@ use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
 
 use std::env;
+use std::path::{Path};
+use std::process;
 
 mod data_acquisition;
 mod state;
@@ -48,7 +50,6 @@ pub struct App {
     palette: state::Palette
 }
 
-const FONT: &str = "font/Hack-Regular.ttf";
 const DEFAULT_WINDOW_SIZE: u32 = 640;
 const DEFAULT_RING_PCT: u32 = 30;
 
@@ -166,9 +167,21 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
     let mut sz = wsz as f64 / 3.0; 
     let rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
 
-    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
-    let ref font = assets.join(FONT);
-    let glyphs = GlyphCache::new(font, (), TextureSettings::new() ).unwrap();
+    let ref font = match find_folder::Search::ParentsThenKids(3,3).for_folder("assets") {
+        Ok(folder) => folder.join("font/Hack-Regular.ttf"),
+        Err(_) => Path::new("/usr/share/fonts/truetype/freefont/FreeSans.ttf").to_path_buf()
+    };
+    println!("{:?}", font.clone());
+
+    let glyphs = match GlyphCache::new(font, (), TextureSettings::new() ) {
+        Ok(g) => g,
+        Err(e) => {
+            println!("Could not load font {:?}", font);
+            println!("{:?}", e);
+            process::exit(1);
+        }
+    };
+            
 
     let palette = config::read_palette();
 
