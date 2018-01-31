@@ -1,4 +1,3 @@
-
 extern crate std;
 use std::io::{stdin, BufRead, BufReader};
 use state;
@@ -14,7 +13,7 @@ fn parse_line(line: &str, t: & state::RingDataType) -> Option<state::RingData> {
             match line.parse::<i32>() {
                 Ok(i) => Some(state::RingData::Int(i)),
                 Err(msg) => {
-                    println!("Expected an int, but got: {:?}", msg);
+                    //println!("Expected an int, but got: {:?}", msg);
                     None
                 }
 

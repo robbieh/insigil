@@ -171,7 +171,6 @@ pub fn setup(window: & PistonWindow, opengl: piston_window::OpenGL, p: & Params)
         Ok(folder) => folder.join("font/Hack-Regular.ttf"),
         Err(_) => Path::new("/usr/share/fonts/truetype/freefont/FreeSans.ttf").to_path_buf()
     };
-    println!("{:?}", font.clone());
 
     let glyphs = match GlyphCache::new(font, (), TextureSettings::new() ) {
         Ok(g) => g,
