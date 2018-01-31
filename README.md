@@ -1,6 +1,7 @@
 
 # Insigil
 
+<meta property="og:image" content="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/insigil.png"/>
 <img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/insigil.png" height=320 width=320> <img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/theming-1.png" height=320 width=320>
 
 
