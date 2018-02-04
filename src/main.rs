@@ -16,12 +16,13 @@ extern crate toml;
 #[cfg(feature = "include_sdl2")] extern crate sdl2_window;
 #[cfg(feature = "include_glfw")] extern crate glfw_window;
 #[cfg(feature = "include_glutin")] extern crate glutin_window;
+extern crate hdrsample;
 
-use piston::input::*;
-use piston_window::{PistonWindow, TextureSettings};
 #[cfg(feature = "include_sdl2")] use sdl2_window::Sdl2Window as BackendWindow;
 #[cfg(feature = "include_glfw")] use glfw_window::GlfwWindow as BackendWindow;
 #[cfg(feature = "include_glutin")] use glutin_window::GlutinWindow as BackendWindow;
+use piston::input::*;
+use piston_window::{PistonWindow, TextureSettings};
 use opengl_graphics::GlyphCache;
 use piston::window::{WindowSettings};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
@@ -34,6 +35,8 @@ use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
 
 use std::env;
+use std::path::{Path};
+use std::process;
 
 mod data_acquisition;
 mod state;
@@ -41,6 +44,7 @@ mod viz;
 mod widget;
 mod config;
 
+use state::{RingDataType};
 use widget::Widget;
 
 pub struct App {
@@ -52,7 +56,6 @@ pub struct App {
     palette: state::Palette
 }
 
-const FONT: &str = "font/Hack-Regular.ttf";
 const DEFAULT_WINDOW_SIZE: u32 = 640;
 const DEFAULT_RING_PCT: u32 = 30;
 
@@ -101,7 +104,7 @@ impl App {
 pub struct FileAndOpts {
     file: String,
     opts: String,
-    viz_type: state::RingDataBufferType
+    datType: RingDataType
 }
 
 #[derive(Debug, Clone)]
@@ -116,24 +119,35 @@ pub fn parse_args(mut args: std::env::Args) -> Params {
     };
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "-br" => {
+                let f = args.next().unwrap();
+                let fao = FileAndOpts { file: f, 
+                                        opts: "br".to_string(), 
+                                        datType: RingDataType::Int};
+                p.files.push(fao);
+                //println!("file {:?}", f)
+            }
             "-hr" => {
                 let f = args.next().unwrap();
-                let fao = FileAndOpts { file: f, opts: "hr".to_string(),
-                                  viz_type: state::RingDataBufferType::Ints};
+                let fao = FileAndOpts { file: f, 
+                                        opts: "hr".to_string(), 
+                                        datType: RingDataType::Int};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-gr" => {
                 let f = args.next().unwrap();
-                let fao = FileAndOpts { file: f, opts: "gr".to_string(),
-                                  viz_type: state::RingDataBufferType::IntVec};
+                let fao = FileAndOpts { file: f, 
+                                        opts: "gr".to_string(), 
+                                        datType: RingDataType::IntVec};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
             "-tr" => {
                 let f = args.next().unwrap();
-                let fao = FileAndOpts { file: f, opts: "tr".to_string(),
-                                  viz_type: state::RingDataBufferType::Text};
+                let fao = FileAndOpts { file: f, 
+                                        opts: "tr".to_string(), 
+                                         datType: RingDataType::Text};
                 p.files.push(fao);
                 //println!("file {:?}", f)
             }
@@ -159,9 +173,20 @@ pub fn setup(window: & PistonWindow<BackendWindow>, opengl: piston_window::OpenG
     let mut sz = wsz as f64 / 3.0; 
     let rwidth = sz * (DEFAULT_RING_PCT as f64 / 100.0) * 0.25;
 
-    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
-    let ref font = assets.join(FONT);
-    let glyphs = GlyphCache::new(font, (), TextureSettings::new() ).unwrap();
+    let ref font = match find_folder::Search::ParentsThenKids(3,3).for_folder("assets") {
+        Ok(folder) => folder.join("font/Hack-Regular.ttf"),
+        Err(_) => Path::new("/usr/share/fonts/truetype/freefont/FreeSans.ttf").to_path_buf()
+    };
+
+    let glyphs = match GlyphCache::new(font, (), TextureSettings::new() ) {
+        Ok(g) => g,
+        Err(e) => {
+            println!("Could not load font {:?}", font);
+            println!("{:?}", e);
+            process::exit(1);
+        }
+    };
+            
 
     let palette = config::read_palette();
 
@@ -178,7 +203,7 @@ pub fn setup(window: & PistonWindow<BackendWindow>, opengl: piston_window::OpenG
         let thread_tx = txdata.clone();
         let f = fao.file.clone();
         let fo = fao.opts.clone();
-        let ft = fao.viz_type.clone();
+        let ft = fao.datType.clone();
         if f == "-" {
             thread::spawn(move|| 
                           { data_acquisition::stdin_reader(thread_tx, 
@@ -194,12 +219,19 @@ pub fn setup(window: & PistonWindow<BackendWindow>, opengl: piston_window::OpenG
                           });
         }
         match fo.as_str() {
+            "br" => {
+                let ring = 
+                    viz::BarRing::new
+                    (0.0, 0.0, sz, rwidth, wcount, 
+                     palette.clone(),
+                     );
+                app.widgets.push(Box::new(ring));
+            },
             "hr" => {
                 let ring = 
                     viz::HistoRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
                      palette.clone(),
-                     state::RingDataBuffer::new(state::RingDataBufferType::Ints), 
                      );
                 app.widgets.push(Box::new(ring));
             },
@@ -208,7 +240,6 @@ pub fn setup(window: & PistonWindow<BackendWindow>, opengl: piston_window::OpenG
                     viz::GaugesRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
                      palette.clone(),
-                     state::RingDataBuffer::new(state::RingDataBufferType::IntVec), 
                      );
                 app.widgets.push(Box::new(ring));
             }
@@ -217,7 +248,6 @@ pub fn setup(window: & PistonWindow<BackendWindow>, opengl: piston_window::OpenG
                     viz::TextRing::new
                     (0.0, 0.0, sz, rwidth, wcount, 
                      palette.clone(),
-                     state::RingDataBuffer::new(state::RingDataBufferType::Text), 
                      );
                 app.widgets.push(Box::new(ring));
             }
