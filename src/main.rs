@@ -14,10 +14,14 @@ extern crate serde;
 extern crate serde_derive;
 extern crate toml;
 #[cfg(feature = "include_sdl2")] extern crate sdl2_window;
+#[cfg(feature = "include_glfw")] extern crate glfw_window;
+#[cfg(feature = "include_glutin")] extern crate glutin_window;
 
 use piston::input::*;
 use piston_window::{PistonWindow, TextureSettings};
-#[cfg(feature = "include_sdl2")] use sdl2_window::Sdl2Window;
+#[cfg(feature = "include_sdl2")] use sdl2_window::Sdl2Window as BackendWindow;
+#[cfg(feature = "include_glfw")] use glfw_window::GlfwWindow as BackendWindow;
+#[cfg(feature = "include_glutin")] use glutin_window::GlutinWindow as BackendWindow;
 use opengl_graphics::GlyphCache;
 use piston::window::{WindowSettings};
 use opengl_graphics::{ GlGraphics, OpenGL }; 
@@ -143,7 +147,7 @@ pub fn parse_args(mut args: std::env::Args) -> Params {
 
 /// This will spwan threads paired with widgets, and create
 /// the App struct with widget vec and receiver channel
-pub fn setup(window: & PistonWindow<sdl2_window::Sdl2Window>, opengl: piston_window::OpenGL, p: & Params) -> App {
+pub fn setup(window: & PistonWindow<BackendWindow>, opengl: piston_window::OpenGL, p: & Params) -> App {
     //println!("params\n=====\n{:?}", p);
 
     let (txdata,rxdata): (Sender<state::ChannelData>, Receiver<state::ChannelData>) = mpsc::channel();
@@ -228,7 +232,7 @@ pub fn setup(window: & PistonWindow<sdl2_window::Sdl2Window>, opengl: piston_win
 pub fn main() {
     let p = parse_args(env::args());
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow<Sdl2Window> = 
+    let mut window: PistonWindow<BackendWindow> = 
         WindowSettings::new(
             "insigil", 
              [DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE])
