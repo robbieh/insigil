@@ -17,15 +17,17 @@ Currently, Insigil can draw historgrams, sets of gauges, and text taken from std
 
 #### Bar ring: -br
 
+<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/bar-example.png" height=160 width=160>
+
 Show a set of numbers as a sort of round bar chart:
 
 ```
 echo "1 2 3 4 5 4 3 2 1 2 3 4 5 6 5 4 3 4 5 6 7 6 5 4 3 2 1 2 3 2 1 2 3 4 3 4 5 6 7 6 5 4 3 2 1"| tr -s ' ' \\n > numbers
 insigil -hr numbers
 ```
-<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/bar-example.png" height=160 width=160>
-
 #### Histogram ring: -hr
+
+<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/histogram-example.png" height=160 width=160>
 
 Show a set of numbers as a histogram:
 
@@ -33,27 +35,28 @@ Show a set of numbers as a histogram:
 echo "1 2 3 4 5 4 3 2 1 2 3 4 5 6 5 4 3 4 5 6 7 6 5 4 3 2 1 2 3 2 1 2 3 4 3 4 5 6 7 6 5 4 3 2 1"| tr -s ' ' \\n > numbers
 insigil -hr numbers
 ```
-<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/histogram-example.png" height=160 width=160>
 
 #### Gauge set ring: -gr
+
+<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/gauge-example.png" height=160 width=160>
 
 Display the system's load average for the last 1, 5, and 15 mintues as three gauges:
 
 ```insigil -gr <( while true; do cut -f 1-3 -d ''  /proc/loadavg | tr -d . ; sleep 1; done )```
 
-<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/gauge-example.png" height=160 width=160>
-
 #### Text ring: -tr
+
+<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/text-example.png" height=160 width=160>
 
 Just show some static text:
 
 ```insigil -tr <( echo "...--->>>|Insigil|<<<---...") ```
 
-<img src="https://raw.githubusercontent.com/robbieh/insigil/master/docs/screenshots/text-example.png" height=160 width=160>
-
 #### Combinations
 
 The flags can be combined, and each new one creates a new ring inside the previous one.
+
+```insigil -tr <( echo "...--->>>|Insigil|<<<---...") ```
 
 ### Theming
 
@@ -73,6 +76,27 @@ The format is R, G, B, Alpha scaled from 0.0 to 1.0.
 
 * 0.1.1 - Added a real histogram. Updated to latest Piston libs.
 * 0.1.0 - Initial version
+
+### Building it
+
+First, [install Rust](https://www.rust-lang.org/en-US/install.html)
+
+Then roughly:
+
+```
+git clone https://github.com/robbieh/insigil
+cd insigil
+cargo build --release
+./target/release/insigil
+```
+
+If you want the SDL2 or GLFW backend, try one of these instead. Though for me this displays at the wrong scale on a high def display. YMMV.
+
+```
+cargo build --release --no-default-features --features include_sdl2
+cargo build --release --no-default-features --features include_glfw
+```
+
 
 ### Bugs and Limitations
 
