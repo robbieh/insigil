@@ -334,7 +334,7 @@ impl Widget for TextRing
                     txtq.push_front(c);
                 };
                 //println!("{:?}",txtq.len());
-                while txtq.len() > 210 { let _ = txtq.pop_back(); }
+                while txtq.len() > 100 { let _ = txtq.pop_back(); }
             },
             _ => {},
         }
